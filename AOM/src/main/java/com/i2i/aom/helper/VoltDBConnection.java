@@ -2,7 +2,12 @@ package com.i2i.aom.helper;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.voltdb.client.Client;
+import org.voltdb.client.ClientConfig;
+import org.voltdb.client.ClientFactory;
+import org.voltdb.client.NoConnectionsException;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,23 +15,16 @@ import java.sql.SQLException;
 @Component
 public class VoltDBConnection {
 
-    @Value("${spring.datasource.voltdb.driver-class-name}")
-    private String databaseDriver;
+    @Value("${spring.datasource.voltdb.dbUrl}")
+    private String dbUrl;
 
-    @Value("${spring.datasource.voltdb.url}")
-    private String connectionString;
+    @Value("${spring.datasource.voltdb.port}")
+    private int port;
 
-    @Value("${spring.datasource.voltdb.username}")
-    private String userName;
-
-    @Value("${spring.datasource.voltdb.password}")
-    private String password;
-
-    public Connection getVoltDBConnection() throws ClassNotFoundException, SQLException {
-        Class.forName(databaseDriver);
-        return DriverManager.getConnection(
-                connectionString,
-                userName,
-                password);
+    public Client getClient() throws IOException {
+        ClientConfig config = new ClientConfig();
+        Client client = ClientFactory.createClient(config);
+        client.createConnection(dbUrl, port);
+        return client;
     }
 }

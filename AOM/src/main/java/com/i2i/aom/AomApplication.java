@@ -24,7 +24,7 @@ public class AomApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println(oracleConnection.getOracleConnection());
-//        System.out.println(voltDBConnection.getVoltDBConnection());
+        System.out.println(voltDBConnection.getClient());
 
     }
 }
