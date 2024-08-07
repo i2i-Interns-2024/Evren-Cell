@@ -24,7 +24,7 @@ public class DataTransGenerator implements Runnable{
 
         long startTime = System.currentTimeMillis();
 
-        while(counter < 100000 ) { //generate
+        while(generate) {
 
             actor.tell(new DataTransaction("5461970089", 1, 50, 1), ActorRef.noSender());
 
@@ -37,7 +37,7 @@ public class DataTransGenerator implements Runnable{
         }
 
         long timeResult = ((System.currentTimeMillis() - startTime));
-        System.out.println("sent counter " + counter + " transactions in: " + timeResult + "milliseconds");
+        System.out.println("sent  " + counter + " data transactions in: " + timeResult + " milliseconds");
 
     }
 
