@@ -5,9 +5,12 @@ import com.i2i.aom.mapper.PackageMapper;
 import com.i2i.aom.model.Package;
 import com.i2i.aom.repository.PackageRepository;
 import org.springframework.stereotype.Service;
+import org.voltdb.client.ProcCallException;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PackageService {
@@ -30,5 +33,24 @@ public class PackageService {
         }
     }
 
+    public List<PackageDto> getUserPackageByMsisdn(String msisdn){
+        try {
+            List<Package> packages = packageRepository.getUserPackageByMsisdn(msisdn);
+            return packages.stream()
+                    .map(packageMapper::packageToPackageDto)
+                    .toList();
 
+        }catch (IOException | ProcCallException exception){
+            throw new RuntimeException("Error retrieving user package by msisdn ", exception);
+        }
+    }
+
+    public Optional<PackageDto> getPackageDetails(String packageName){
+        try {
+            Optional<Package> packageDetails = packageRepository.getPackageDetails(packageName);
+            return packageDetails.map(packageMapper::packageToPackageDto);
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Error retrieving package details", e);
+        }
+    }
 }
