@@ -9,9 +9,9 @@ import java.util.Properties;
 public class ABMF {
 
     public static void main(String[] args) throws SQLException {
-        String url = "jdbc:oracle:thin:@35.192.131.252:1521:xe";
-        String userName = "C##ABMF";
-        String password = "AbkMfe";
+        String url = "";
+        String userName = "";
+        String password = "";
 
         OracleOperations oracleOperations = new OracleOperations(url, userName, password);
 
