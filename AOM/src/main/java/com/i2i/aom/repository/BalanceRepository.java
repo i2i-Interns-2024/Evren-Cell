@@ -1,6 +1,7 @@
 package com.i2i.aom.repository;
 
 import com.i2i.aom.constant.OracleQueries;
+import com.i2i.aom.dto.CustomerBalance;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.request.CreateBalanceRequest;
@@ -153,5 +154,36 @@ public class BalanceRepository {
         );
 
         return new ResponseEntity<>("Balance created successfully", HttpStatus.CREATED);
+    }
+
+    public CustomerBalance getRemainingCustomerBalanceByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
+        Client client = voltDBConnection.getClient();
+        ClientResponse response = client.callProcedure("GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN", msisdn);
+
+        if (response.getStatus() == ClientResponse.SUCCESS) {
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                String msisdnResult = resultTable.getString("MSISDN");
+                int balanceData = (int) resultTable.getLong("BAL_LVL_DATA");
+                int balanceSms = (int) resultTable.getLong("BAL_LVL_SMS");
+                int balanceMinutes = (int) resultTable.getLong("BAL_LVL_MINUTES");
+                Timestamp sdate = resultTable.getTimestampAsSqlTimestamp("SDATE");
+                Timestamp edate = resultTable.getTimestampAsSqlTimestamp("EDATE");
+
+                CustomerBalance balanceResponse = CustomerBalance.builder()
+                        .msisdn(msisdnResult)
+                        .balanceData(balanceData)
+                        .balanceMinutes(balanceMinutes)
+                        .balanceSms(balanceSms)
+                        .sdate(sdate)
+                        .edate(edate)
+                        .build();
+
+                client.close();
+                return balanceResponse;
+            }
+        }
+        client.close();
+        return null;
     }
 }
