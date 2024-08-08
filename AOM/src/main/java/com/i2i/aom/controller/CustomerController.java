@@ -1,8 +1,6 @@
 package com.i2i.aom.controller;
 
 import com.i2i.aom.dto.CustomerDto;
-import com.i2i.aom.repository.CustomerRepository;
-import com.i2i.aom.request.RegisterCustomerRequest;
 import com.i2i.aom.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +15,9 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
-    private final CustomerRepository customerRepository;
 
-    public CustomerController(CustomerService customerService,
-                              CustomerRepository customerRepository) {
+    public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
-        this.customerRepository = customerRepository;
     }
 
     @GetMapping("/getCustomerByMsisdn")
@@ -34,9 +29,6 @@ public class CustomerController {
     public ResponseEntity<List<CustomerDto>> getAllCustomers() throws SQLException, ClassNotFoundException {
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
-
-    @PostMapping("/createCustomer")
-    public ResponseEntity createCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest) throws SQLException, ClassNotFoundException {
-        return ResponseEntity.ok(customerRepository.createUserInOracle(registerCustomerRequest));
-    }
 }
+
+

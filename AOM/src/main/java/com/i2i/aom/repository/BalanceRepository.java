@@ -20,7 +20,8 @@ public class BalanceRepository {
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
 
-    public BalanceRepository(OracleConnection oracleConnection, VoltDBConnection voltDBConnection) {
+    public BalanceRepository(OracleConnection oracleConnection,
+                             VoltDBConnection voltDBConnection) {
         this.oracleConnection = oracleConnection;
         this.voltDBConnection = voltDBConnection;
     }
@@ -73,7 +74,7 @@ public class BalanceRepository {
         VoltTable packageTable = packageResponse.getResults()[0];
 
         if (!packageTable.advanceRow()) {
-            return new ResponseEntity<>("Package not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Package not found in voltDb", HttpStatus.NOT_FOUND);
         }
 
         int amountMinutes = (int) packageTable.getLong("AMOUNT_MINUTES");
@@ -84,8 +85,16 @@ public class BalanceRepository {
         Timestamp sdate = new Timestamp(System.currentTimeMillis());
         Timestamp edate = new Timestamp(sdate.getTime() + period * 24L * 60L * 60L * 1000L);
 
+        ClientResponse maxIdResponse = client.callProcedure("GetMaxBalanceId");
+        VoltTable maxIdTable = maxIdResponse.getResults()[0];
+        int maxBalanceId = 0;
+        if (maxIdTable.advanceRow()) {
+            maxBalanceId = (int) maxIdTable.getLong("MAX_BALANCE_ID");
+        }
+        int balanceId = maxBalanceId + 1;
+
         client.callProcedure("InsertBalanceToCustomer",
-                createBalanceRequest.balanceId(),
+                balanceId,
                 createBalanceRequest.customerId(),
                 createBalanceRequest.packageId(),
                 amountMinutes,
@@ -97,5 +106,4 @@ public class BalanceRepository {
 
         return new ResponseEntity<>("Balance created successfully", HttpStatus.CREATED);
     }
-    
 }
