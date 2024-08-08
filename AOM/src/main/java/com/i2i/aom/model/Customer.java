@@ -12,19 +12,17 @@ public class Customer {
     private String surname;
     private String email;
     private String password;
-    private String status;
-    private String securityKey;
+    private String TCNumber;
     private Date sDate;
 
-    public Customer(Integer customerId, String msisdn, String name, String surname, String email, String password, String status, String securityKey, Date sDate) {
+    public Customer(Integer customerId, String msisdn, String name, String surname, String email, String password,  String securityKey, Date sDate) {
         this.customerId = customerId;
         this.msisdn = msisdn;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
-        this.status = status;
-        this.securityKey = securityKey;
+        this.TCNumber = securityKey;
         this.sDate = sDate;
     }
     public Customer() { }
@@ -77,20 +75,13 @@ public class Customer {
         this.password = password;
     }
 
-    public String getStatus() {
-        return status;
+
+    public String getTCNumber() {
+        return TCNumber;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getSecurityKey() {
-        return securityKey;
-    }
-
-    public void setSecurityKey(String securityKey) {
-        this.securityKey = securityKey;
+    public void setTCNumber(String TCNumber) {
+        this.TCNumber = TCNumber;
     }
 
     public Date getsDate() {
@@ -110,8 +101,7 @@ public class Customer {
                 ", surname='" + surname + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", status='" + status + '\'' +
-                ", securityKey='" + securityKey + '\'' +
+                ", TCNumber='" + TCNumber + '\'' +
                 ", sDate=" + sDate +
                 '}';
     }

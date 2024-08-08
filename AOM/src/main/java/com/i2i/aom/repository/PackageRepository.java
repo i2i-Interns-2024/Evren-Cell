@@ -1,6 +1,7 @@
 package com.i2i.aom.repository;
 
 import com.i2i.aom.constant.OracleQueries;
+import com.i2i.aom.dto.PackageDetails;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Package;
@@ -32,7 +33,6 @@ public class PackageRepository {
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(OracleQueries.SELECT_ALL_PACKAGES);
         List<Package> packageList = new ArrayList<>();
-
         while (resultSet.next()) {
             Integer packageId = resultSet.getInt("PACKAGE_ID");
             String packageName = resultSet.getString("PACKAGE_NAME");
@@ -51,7 +51,6 @@ public class PackageRepository {
                     .amountSms(amountSms)
                     .period(period)
                     .build();
-
             packageList.add(packageModel);
         }
 
@@ -93,9 +92,9 @@ public class PackageRepository {
     }
 
 
-    public Optional<Package> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
+    public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
         Connection connection = oracleConnection.getOracleConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS);
+        PreparedStatement preparedStatement = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS_NAME);
         preparedStatement.setString(1, packageName);
         ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -105,7 +104,7 @@ public class PackageRepository {
             Integer amountData = resultSet.getInt("AMOUNT_DATA");
 
             connection.close();
-            return Optional.of(Package.builder()
+            return Optional.of(PackageDetails.builder()
                     .packageName(packageName)
                     .amountMinutes(amountMinutes)
                     .amountSms(amountSms)

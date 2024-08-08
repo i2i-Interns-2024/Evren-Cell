@@ -1,5 +1,6 @@
 package com.i2i.aom.controller;
 
+import com.i2i.aom.dto.PackageDetails;
 import com.i2i.aom.dto.PackageDto;
 import com.i2i.aom.service.PackageService;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class PackageController {
     }
 
     @GetMapping("/getPackageDetails")
-    public ResponseEntity<Optional<PackageDto>> getPackageDetails (@RequestParam String packageName){
+    public ResponseEntity<Optional<PackageDetails>> getPackageDetails (@RequestParam String packageName){
         return ResponseEntity.ok(packageService.getPackageDetails(packageName));
     }
 }
