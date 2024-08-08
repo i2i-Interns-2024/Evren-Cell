@@ -8,30 +8,33 @@ import org.voltdb.VoltTable;
 
 public class Main {
     public static void main(String[] args) {
+        // Zaman ölçümü için başlangıç zamanı alınıyor
+        long startTime = System.currentTimeMillis();
+
         // VoltDB'ye bağlanmak için ClientConfig oluşturuyoruz
         ClientConfig clientConfig = new ClientConfig();
         Client client = ClientFactory.createClient(clientConfig);
 
         try {
             // VoltDB sunucusuna bağlanıyoruz
-            client.createConnection("34.132.46.242:32803");
-            ClientResponse response0 = client.callProcedure("GET_CUSTOMER_INFO_BY_MSISDN","5306667788");
+            client.createConnection("34.132.46.242:32803"); //usa server
+
+            ClientResponse response0 = client.callProcedure("PROC1", "2");
 
             if (response0.getStatus() == ClientResponse.SUCCESS) {
                 VoltTable results = response0.getResults()[0];
                 while (results.advanceRow()) {
                     System.out.println(
-                            "CUST_ID: " + results.getLong("CUST_ID") +
+                            "CUST_ID: " + results.getString("PACKAGE_NAME") /*+
                                     ", MSISDN: " + results.getString("MSISDN") +
                                     ", NAME: " + results.getString("NAME") +
                                     ", SURNAME: " + results.getString("SURNAME") +
                                     ", EMAIL: " + results.getString("EMAIL") +
                                     ", SDATE: " + results.getTimestampAsSqlTimestamp("SDATE") +
-                                    ", TC_NO: " + results.getString("TC_NO")
+                                    ", TC_NO: " + results.getString("TC_NO")*/
                     );
                 }
-            }
-            else {
+            } else {
                 System.out.println("Procedure call failed: " + response0.getStatusString());
             }
 
@@ -40,6 +43,16 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Zaman ölçümü için bitiş zamanı alınıyor
+        long endTime = System.currentTimeMillis();
+
+        // Toplam çalışma süresi hesaplanıyor
+        long duration = endTime - startTime;
+
+        // Sonuç yazdırılıyor
+        System.out.println("Code execution time: " + duration + " milliseconds");
+
         System.out.println("intellij commit deneme2");
     }
 }
