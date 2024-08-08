@@ -1,4 +1,15 @@
 package com.i2i.aom.request;
 
-public class RegisterCustomerRequest {
+import lombok.Builder;
+
+@Builder
+public record RegisterCustomerRequest (
+        String name,
+        String surname,
+        String msisdn,
+        String email,
+        String password,
+        String TCNumber,
+        String packageName
+){
 }

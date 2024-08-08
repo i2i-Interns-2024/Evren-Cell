@@ -1,5 +1,6 @@
 package com.i2i.aom.service;
 
+import com.i2i.aom.dto.PackageDetails;
 import com.i2i.aom.dto.PackageDto;
 import com.i2i.aom.mapper.PackageMapper;
 import com.i2i.aom.model.Package;
@@ -45,10 +46,9 @@ public class PackageService {
         }
     }
 
-    public Optional<PackageDto> getPackageDetails(String packageName){
+    public Optional<PackageDetails> getPackageDetails(String packageName){
         try {
-            Optional<Package> packageDetails = packageRepository.getPackageDetails(packageName);
-            return packageDetails.map(packageMapper::packageToPackageDto);
+            return packageRepository.getPackageDetails(packageName);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException("Error retrieving package details", e);
         }
