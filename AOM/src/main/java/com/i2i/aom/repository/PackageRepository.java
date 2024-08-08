@@ -1,10 +1,10 @@
 package com.i2i.aom.repository;
 
-import com.i2i.aom.constant.OracleQueries;
 import com.i2i.aom.dto.PackageDetails;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Package;
+import oracle.jdbc.OracleTypes;
 import org.springframework.stereotype.Repository;
 import org.voltdb.VoltTable;
 import org.voltdb.client.Client;
@@ -27,11 +27,46 @@ public class PackageRepository {
         this.voltDBConnection = voltDBConnection;
     }
 
+//    public List<Package> getAllPackages() throws SQLException, ClassNotFoundException {
+//        Connection connection = oracleConnection.getOracleConnection();
+//        System.out.println(connection);
+//        Statement statement = connection.createStatement();
+//        ResultSet resultSet = statement.executeQuery(OracleQueries.SELECT_ALL_PACKAGES);
+//        List<Package> packageList = new ArrayList<>();
+//        while (resultSet.next()) {
+//            Integer packageId = resultSet.getInt("PACKAGE_ID");
+//            String packageName = resultSet.getString("PACKAGE_NAME");
+//            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
+//            Integer amountData = resultSet.getInt("AMOUNT_DATA");
+//            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
+//            double price = resultSet.getDouble("PRICE");
+//            Integer period = resultSet.getInt("PERIOD");
+//
+//            Package packageModel = Package.builder()
+//                    .packageId(packageId)
+//                    .packageName(packageName)
+//                    .amountMinutes(amountMinutes)
+//                    .amountData(amountData)
+//                    .price(price)
+//                    .amountSms(amountSms)
+//                    .period(period)
+//                    .build();
+//            packageList.add(packageModel);
+//        }
+//
+//        connection.close();
+//        return packageList;
+//
+//    }
+
+
     public List<Package> getAllPackages() throws SQLException, ClassNotFoundException {
         Connection connection = oracleConnection.getOracleConnection();
-        System.out.println(connection);
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(OracleQueries.SELECT_ALL_PACKAGES);
+        CallableStatement callableStatement = connection.prepareCall("{call SELECT_ALL_PACKAGES(?)}");
+        callableStatement.registerOutParameter(1, OracleTypes.CURSOR);
+        callableStatement.execute();
+
+        ResultSet resultSet = (ResultSet) callableStatement.getObject(1);
         List<Package> packageList = new ArrayList<>();
         while (resultSet.next()) {
             Integer packageId = resultSet.getInt("PACKAGE_ID");
@@ -54,9 +89,10 @@ public class PackageRepository {
             packageList.add(packageModel);
         }
 
+        resultSet.close();
+        callableStatement.close();
         connection.close();
         return packageList;
-
     }
 
     public List<Package> getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
@@ -92,18 +128,48 @@ public class PackageRepository {
     }
 
 
+//    public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
+//        Connection connection = oracleConnection.getOracleConnection();
+//        PreparedStatement preparedStatement = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS_NAME);
+//        preparedStatement.setString(1, packageName);
+//        ResultSet resultSet = preparedStatement.executeQuery();
+//
+//        if (resultSet.next()) {
+//            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
+//            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
+//            Integer amountData = resultSet.getInt("AMOUNT_DATA");
+//
+//            connection.close();
+//            return Optional.of(PackageDetails.builder()
+//                    .packageName(packageName)
+//                    .amountMinutes(amountMinutes)
+//                    .amountSms(amountSms)
+//                    .amountData(amountData)
+//                    .build());
+//        } else {
+//            connection.close();
+//            return Optional.empty();
+//        }
+//    }
+
+
     public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
         Connection connection = oracleConnection.getOracleConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS_NAME);
-        preparedStatement.setString(1, packageName);
-        ResultSet resultSet = preparedStatement.executeQuery();
+        CallableStatement callableStatement = connection.prepareCall("{call SELECT_PACKAGE_DETAILS_NAME(?, ?, ?, ?)}");
+        callableStatement.setString(1, packageName);
+        callableStatement.registerOutParameter(2, Types.INTEGER);
+        callableStatement.registerOutParameter(3, Types.INTEGER);
+        callableStatement.registerOutParameter(4, Types.INTEGER);
+        callableStatement.execute();
 
-        if (resultSet.next()) {
-            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
-            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
-            Integer amountData = resultSet.getInt("AMOUNT_DATA");
+        int amountMinutes = callableStatement.getInt(2);
+        int amountSms = callableStatement.getInt(3);
+        int amountData = callableStatement.getInt(4);
 
-            connection.close();
+        callableStatement.close();
+        connection.close();
+
+        if (amountMinutes != 0 || amountSms != 0 || amountData != 0) {
             return Optional.of(PackageDetails.builder()
                     .packageName(packageName)
                     .amountMinutes(amountMinutes)
@@ -111,7 +177,6 @@ public class PackageRepository {
                     .amountData(amountData)
                     .build());
         } else {
-            connection.close();
             return Optional.empty();
         }
     }
