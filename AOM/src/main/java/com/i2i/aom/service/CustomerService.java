@@ -4,8 +4,6 @@ import com.i2i.aom.dto.CustomerDto;
 import com.i2i.aom.mapper.CustomerMapper;
 import com.i2i.aom.model.Customer;
 import com.i2i.aom.repository.CustomerRepository;
-import com.i2i.aom.request.RegisterCustomerRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.voltdb.client.ProcCallException;
 
@@ -36,9 +34,9 @@ public class CustomerService {
                 .toList();
     }
 
-    public ResponseEntity<String> createCustomer(RegisterCustomerRequest registerCustomerRequest) throws SQLException, ClassNotFoundException {
-        return customerRepository.createUserInOracle(registerCustomerRequest);
-    }
+
+
+
 
 
 }

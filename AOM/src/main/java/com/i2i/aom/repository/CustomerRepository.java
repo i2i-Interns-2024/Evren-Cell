@@ -8,6 +8,8 @@ import com.i2i.aom.request.CreateBalanceRequest;
 import com.i2i.aom.request.RegisterCustomerRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.voltdb.VoltTable;
 import org.voltdb.client.Client;
@@ -26,6 +28,7 @@ public class CustomerRepository {
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
     private final BalanceRepository balanceRepository;
+    
     private static final Logger logger = Logger.getLogger(CustomerRepository.class.getName());
 
     public CustomerRepository(OracleConnection oracleConnection,
@@ -85,6 +88,8 @@ public class CustomerRepository {
 
         logger.info("Retrieved package id: " + packageId);
 
+        String encodedPassword = encodePassword(registerCustomerRequest.password());
+
         String insertCustomerSQL = "INSERT INTO CUSTOMER (CUST_ID, NAME, SURNAME, MSISDN, EMAIL, PASSWORD, SDATE, TC_NO) " +
                 "VALUES (cust_id_sequence.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement customerStmt = connection.prepareStatement(insertCustomerSQL, new String[]{"CUST_ID"});
@@ -92,7 +97,7 @@ public class CustomerRepository {
         customerStmt.setString(2, registerCustomerRequest.surname());
         customerStmt.setString(3, registerCustomerRequest.msisdn());
         customerStmt.setString(4, registerCustomerRequest.email());
-        customerStmt.setString(5, registerCustomerRequest.password());
+        customerStmt.setString(5, encodedPassword);
         customerStmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
         customerStmt.setString(7, registerCustomerRequest.TCNumber());
         customerStmt.executeUpdate();
@@ -115,6 +120,8 @@ public class CustomerRepository {
 
         return new ResponseEntity<>("Customer created successfully", HttpStatus.CREATED);
     }
+
+
 
     //volt
     public Optional<Customer> getCustomerByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
@@ -148,5 +155,64 @@ public class CustomerRepository {
         client.close();
         return Optional.empty();
     }
+
+    public ResponseEntity createUserInVoltdb(RegisterCustomerRequest registerCustomerRequest) throws IOException, ProcCallException, InterruptedException {
+        Client client = voltDBConnection.getClient();
+
+        // Retrieve package ID
+        ClientResponse packageResponse = client.callProcedure("GetPackageByName", registerCustomerRequest.packageName());
+        VoltTable packageTable = packageResponse.getResults()[0];
+
+        if (!packageTable.advanceRow()) {
+            client.close();
+            return new ResponseEntity<>("Package not found", HttpStatus.NOT_FOUND);
+        }
+
+        int packageId = (int) packageTable.getLong("PACKAGE_ID");
+
+        ClientResponse maxIdResponse = client.callProcedure("GetMaxCustomerId");
+        VoltTable maxIdTable = maxIdResponse.getResults()[0];
+        int maxCustomerId = 0;
+        if (maxIdTable.advanceRow()) {
+            maxCustomerId = (int) maxIdTable.getLong("MAX_CUST_ID");
+        }
+        int customerId = maxCustomerId + 1;
+
+        // Insert customer details
+        ClientResponse customerResponse = client.callProcedure("InsertCustomer",
+                customerId,
+                registerCustomerRequest.name(),
+                registerCustomerRequest.surname(),
+                registerCustomerRequest.msisdn(),
+                registerCustomerRequest.email(),
+                encodePassword(registerCustomerRequest.password()),
+                new Timestamp(System.currentTimeMillis()),
+                registerCustomerRequest.TCNumber()
+        );
+
+        VoltTable customerTable = customerResponse.getResults()[0];
+        if (!customerTable.advanceRow()) {
+            client.close();
+            return new ResponseEntity<>("Failed to create customer", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // Create balance request
+        CreateBalanceRequest createBalanceRequest = CreateBalanceRequest.builder()
+                .customerId(customerId)
+                .packageId(packageId)
+                .build();
+
+        // Insert balance
+        ResponseEntity balanceResponse = balanceRepository.createVoltBalance(createBalanceRequest);
+
+        client.close();
+        return balanceResponse;
+    }
+
+    private static String encodePassword(String password) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        return passwordEncoder.encode(password);
+    }
+
 
 }
