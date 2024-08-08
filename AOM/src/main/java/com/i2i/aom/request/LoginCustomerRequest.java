@@ -1,4 +1,7 @@
 package com.i2i.aom.request;
 
-public class LoginCustomerRequest {
+public record LoginCustomerRequest(
+        String msisdn,
+        String password
+) {
 }

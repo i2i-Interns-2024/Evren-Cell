@@ -1,5 +1,6 @@
 package com.i2i.aom.controller;
 
+import com.i2i.aom.request.LoginCustomerRequest;
 import com.i2i.aom.request.RegisterCustomerRequest;
 import com.i2i.aom.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,11 @@ public class AuthController {
     public ResponseEntity registerCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest)
             throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
         return authService.registerCustomer(registerCustomerRequest);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ResponseEntity<String>> login(@RequestBody LoginCustomerRequest loginCustomerRequest) throws SQLException, ClassNotFoundException {
+        return ResponseEntity.ok(authService.login(loginCustomerRequest));
     }
 }
 

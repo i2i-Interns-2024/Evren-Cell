@@ -33,10 +33,4 @@ public class CustomerService {
                 .map(customerMapper::customerToCustomerDto)
                 .toList();
     }
-
-
-
-
-
-
 }
