@@ -14,58 +14,27 @@ public class Main {
 
         try {
             // VoltDB sunucusuna bağlanıyoruz
-            client.createConnection("34.132.46.242:32794");
-
-            ClientResponse response0 = client.callProcedure("PROC1");
+            client.createConnection("34.132.46.242:32803");
+            ClientResponse response0 = client.callProcedure("GET_CUSTOMER_INFO_BY_MSISDN","5306667788");
 
             if (response0.getStatus() == ClientResponse.SUCCESS) {
                 VoltTable results = response0.getResults()[0];
                 while (results.advanceRow()) {
                     System.out.println(
-                            "PACKAGE_ID: " + results.getLong("PACKAGE_ID") +
-                                    ", PACKAGE_NAME: " + results.getString("PACKAGE_NAME") +
-                                    ", PRICE: " + results.getLong("PRICE") +
-                                    ", AMOUNT_MINUTES: " + results.getLong("AMOUNT_MINUTES") +
-                                    ", AMOUNT_DATA: " + results.getLong("AMOUNT_DATA") +
-                                    ", AMOUNT_SMS: " + results.getLong("AMOUNT_SMS") +
-                                    ", PERIOD: " + results.getLong("PERIOD")
-
-
+                            "CUST_ID: " + results.getLong("CUST_ID") +
+                                    ", MSISDN: " + results.getString("MSISDN") +
+                                    ", NAME: " + results.getString("NAME") +
+                                    ", SURNAME: " + results.getString("SURNAME") +
+                                    ", EMAIL: " + results.getString("EMAIL") +
+                                    ", SDATE: " + results.getTimestampAsSqlTimestamp("SDATE") +
+                                    ", TC_NO: " + results.getString("TC_NO")
                     );
                 }
-            } else {
+            }
+            else {
                 System.out.println("Procedure call failed: " + response0.getStatusString());
             }
 
-           /* System.out.println("--------------------------------------------------------------------------------------------------");
-            // Prosedürü çağırıyoruz (accountId parametresi olarak 4 gönderiyoruz)
-            ClientResponse response = client.callProcedure("PROC6", 6,5);
-            ClientResponse response2 = client.callProcedure("PROC1");
-
-
-            // Yanıtı kontrol ediyoruz ve sonuçları ekrana yazdırıyoruz
-            if (response2.getStatus() == ClientResponse.SUCCESS) {
-                VoltTable results = response2.getResults()[0];
-                while (results.advanceRow()) {
-                    System.out.println(
-                            "AMOUNT_DATA: " + results.getLong("PACKAGE_ID") +
-                                    ", PACKAGE_NAME: " + results.getString("PACKAGE_NAME") +
-                                    ", PRICE: " + results.getLong("PRICE") +
-                                    ", AMOUNT_MINUTES: " + results.getLong("AMOUNT_MINUTES") +
-                                    ", AMOUNT_DATA: " + results.getLong("AMOUNT_DATA") +
-                                    ", AMOUNT_SMS: " + results.getLong("AMOUNT_SMS") +
-                                    ", PERIOD: " + results.getLong("PERIOD")
-
-
-                    );
-
-                }
-            } else {
-                System.out.println("Procedure call failed: " + response2.getStatusString());
-            }
-
-
-*/
             // Bağlantıyı kapatıyoruz
             client.close();
         } catch (Exception e) {
