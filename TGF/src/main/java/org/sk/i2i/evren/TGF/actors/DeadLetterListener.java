@@ -4,6 +4,8 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.actor.DeadLetter;
 import org.sk.i2i.evren.TGF.DTO.DataTransaction;
+import org.sk.i2i.evren.TGF.DTO.SmsTransaction;
+import org.sk.i2i.evren.TGF.DTO.VoiceTransaction;
 
 public class DeadLetterListener extends AbstractActor {
 
@@ -22,14 +24,28 @@ public class DeadLetterListener extends AbstractActor {
 
                         deadLetterCounter++;
                         if(deadLetterCounter % 1000 == 0) {
-                            System.out.println("dead letter counter:  " + deadLetterCounter);
+                            System.out.print("deadLetter counter:  " + deadLetterCounter + "\r");
                         }
-                    }
-                    else {
+
+                    } else if (deadLetter.message() instanceof VoiceTransaction) {
+
+                        deadLetterCounter++;
+                        if(deadLetterCounter % 1000 == 0) {
+                            System.out.print("deadLetter counter:  " + deadLetterCounter + "\r");
+                        }
+
+                    } else if (deadLetter.message() instanceof SmsTransaction) {
+
+                        deadLetterCounter++;
+                        if(deadLetterCounter % 1000 == 0) {
+                            System.out.print("deadLetter counter:  " + deadLetterCounter + "\r");
+                        }
+
+                    } /*else {
                         System.out.println("Received dead letter: " + deadLetter.message() +
                                 " from " + deadLetter.sender() +
                                 " to " + deadLetter.recipient());
-                    }
+                    }*/
 
 
                 })
