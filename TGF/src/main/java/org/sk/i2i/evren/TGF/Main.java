@@ -13,17 +13,15 @@ import java.util.Scanner;
 public class Main {
 
     private static final Scanner sc = new Scanner(System.in);
+    private static final DeadLetterStats deadLetterStats = new DeadLetterStats();
 
-    private static ActorSystem system = ActorSystem.create("TGFSystem", ConfigFactory.load("application.conf"));
+    private static final ActorSystem actorSystem = ActorSystem.create("TGFSystem", ConfigFactory.load("application.conf"));
+    private static final ActorRef actor = actorSystem.actorOf(Props.create(AkkaActor.class), "TGFActor");
+    private static final ActorRef deadLetterListener = actorSystem.actorOf(Props.create(DeadLetterListener.class, deadLetterStats), "deadLetterListener");
 
-    private static ActorSelection remoteActor = system.actorSelection("akka://TGFSystemCopy@127.0.0.1:25521/user/TGFActorCopy");
-    private static ActorRef akkaActor = system.actorOf(Props.create(AkkaActor.class, remoteActor), "TGFActor");
-    private static ActorRef deadLetterListener = system.actorOf(DeadLetterListener.props(), "deadLetterListener");
-
-
-    private static TransactionGenerator voiceGenerator = new TransactionGenerator(TransactionGenerator.Types.VOICE, akkaActor, 1_000_000, -1);
-    private static TransactionGenerator dataGenerator = new TransactionGenerator(TransactionGenerator.Types.DATA, akkaActor, 500_000, -1);
-    private static TransactionGenerator smsGenerator = new TransactionGenerator(TransactionGenerator.Types.SMS, akkaActor, 2_000_000, -1);
+    private static final TransactionGenerator voiceGenerator = new TransactionGenerator(TransactionGenerator.Types.VOICE, actor, 1_000_000);
+    private static final TransactionGenerator dataGenerator = new TransactionGenerator(TransactionGenerator.Types.DATA, actor, 1_000_000);
+    private static final TransactionGenerator smsGenerator = new TransactionGenerator(TransactionGenerator.Types.SMS, actor, 1_000_000);
 
     private static Thread voiceThread;
     private static Thread dataThread;
@@ -31,7 +29,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        system.eventStream().subscribe(deadLetterListener, DeadLetter.class);
+        //direct deadLetter to deadLetterListener actor
+        actorSystem.eventStream().subscribe(deadLetterListener, DeadLetter.class);
+        //count how many unrecognized commands was received, stop thread after 3 unrecognized commands.
+        int stopCounter =  0;
 
         outer:
         while(true) {
@@ -57,11 +58,13 @@ public class Main {
 
                     stopThreads();
                     sc.close();
-                    Clock.delay(1_000_000);
-                    system.terminate();
+                    Clock.delay(1_000_000); //delay for 1ms to make sure threads are stoped before terminating akka system
+                    actorSystem.terminate();
 
                     break outer;
-
+                }
+                case "setDelay" -> {
+                    updateDelayAll();
                 }
                 case "setDelayVoice" -> {
                     updateDelay(voiceGenerator);
@@ -81,7 +84,14 @@ public class Main {
                 case "resetStats" -> {
                     resetStats();
                 }
-                default -> System.out.println("unrecognized command...");
+                default -> {
+
+                    stopCounter++;
+                    if(stopCounter > 3)
+                        stopThreads();
+
+                    System.out.println("unrecognized command...");
+                }
             }
         }
     }
@@ -104,7 +114,7 @@ public class Main {
 
     private static void stopThreads() {
 
-        if(voiceThread == null || dataThread == null || smsThread == null) //TODO check if alive
+        if(voiceThread == null || dataThread == null || smsThread == null)
             System.out.println("No generators are running...");
         else {
             voiceGenerator.stopGeneration();
@@ -114,23 +124,31 @@ public class Main {
     }
 
     private static void resetStats() {
+
         voiceGenerator.resetStats();
         dataGenerator.resetStats();
         smsGenerator.resetStats();
+        deadLetterStats.reset();
+
     }
 
     private static void printDelay() {
         System.out.println(
-                "Voice Delay: " + voiceGenerator.getDelay() +
-                "\nData Delay:  " + dataGenerator.getDelay() +
-                "\nSms Delay:   " + smsGenerator.getDelay()
+                "Voice: " + voiceGenerator.getDelay() +
+                "\nData:  " + dataGenerator.getDelay() +
+                "\nSms:   " + smsGenerator.getDelay()
         );
     }
 
     private static void printStats() {
         voiceGenerator.printStats();
+        System.out.println("dropped: " + deadLetterStats.getVoiceDeadLetters()  + " Transactions\n");
+
         dataGenerator.printStats();
+        System.out.println("dropped: " + deadLetterStats.getDataDeadLetters()  + " Transactions\n");
+
         smsGenerator.printStats();
+        System.out.println("dropped: " + deadLetterStats.getSmsDeadLetters()  + " Transactions\n");
     }
 
     private static void updateDelay(TransactionGenerator generator) {
@@ -143,5 +161,15 @@ public class Main {
             System.out.println("unsupported input format...");
         }
     }
+    private static void updateDelayAll() {
+        try {
+            System.out.println("enter delay time:");
+            dataGenerator.setDelay(sc.nextLong());
+            smsGenerator.setDelay(sc.nextLong());
+            voiceGenerator.setDelay(sc.nextLong());
 
+        } catch (InputMismatchException e) {
+            System.out.println("unsupported input format...");
+        }
+    }
 }

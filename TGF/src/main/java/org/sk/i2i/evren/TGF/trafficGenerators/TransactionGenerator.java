@@ -61,21 +61,18 @@ public class TransactionGenerator implements Runnable{
         }
 
         System.out.println("traffic generation stopped...");
-        printStats();
     }
 
     private void sendTransaction() {
 
         switch (type) {
-            case DATA -> {
+            case DATA ->
                 actor.tell(new DataTransaction("5461970089", 1, 7, 1), ActorRef.noSender());
-            }
-            case VOICE -> {
+            case VOICE ->
                 actor.tell(new VoiceTransaction("5461970089", "5461970089", 1, 1), ActorRef.noSender());
-            }
-            case SMS -> {
+            case SMS ->
                 actor.tell(new SmsTransaction("5461970089", "5461970089", 1), ActorRef.noSender());
-            }
+
         }
 
     }
@@ -90,12 +87,8 @@ public class TransactionGenerator implements Runnable{
 
     public void setDelay(long delay) {
 
-        System.out.println("delay updated from " + this.delay + " to " + delay);
+        System.out.println("delay updated:  " + this.delay + " --> " + delay + " nanoseconds");
         this.delay = delay;
-    }
-
-    public boolean isGenerating() {
-        return isGenerate;
     }
 
     public void printStats() {
@@ -103,9 +96,9 @@ public class TransactionGenerator implements Runnable{
         long resultTime = ((System.currentTimeMillis() - startTime));
 
         System.out.println(
-                "GENERATOR with type " + type +
-                "\nhas sent " + transCounter + " Transactions" +
-                "\nin " + resultTime + "ms | " + resultTime/1000 + "s | " +  resultTime/60000 + "min.\n"
+                type + " GENERATOR:" +
+                "\nSent:    " + transCounter + " Transactions" +
+                "\nThrough: " + resultTime + "ms | " +  resultTime/60000 + "min."
         );
 
     }
