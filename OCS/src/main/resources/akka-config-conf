@@ -1,0 +1,19 @@
+akka {
+  actor {
+    provider = "akka.remote.RemoteActorRefProvider"
+  }
+  remote {
+    artery {
+      enabled = true
+      transport = tcp
+      canonical {
+        hostname = "127.0.0.1" // mine
+        port = 2551
+      }
+      bind {
+        hostname = "10.128.0.2" // hamza , will be replaced by the real ip
+        port = 9090
+      }
+    }
+  }
+}
