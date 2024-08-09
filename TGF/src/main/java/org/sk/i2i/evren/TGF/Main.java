@@ -8,6 +8,7 @@ import org.sk.i2i.evren.TGF.trafficGenerators.TransactionGenerator;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.Set;
 
 
 public class Main {
@@ -19,9 +20,11 @@ public class Main {
     private static final ActorRef actor = actorSystem.actorOf(Props.create(AkkaActor.class), "TGFActor");
     private static final ActorRef deadLetterListener = actorSystem.actorOf(Props.create(DeadLetterListener.class, deadLetterStats), "deadLetterListener");
 
-    private static final TransactionGenerator voiceGenerator = new TransactionGenerator(TransactionGenerator.Types.VOICE, actor, 1_000_000);
-    private static final TransactionGenerator dataGenerator = new TransactionGenerator(TransactionGenerator.Types.DATA, actor, 1_000_000);
-    private static final TransactionGenerator smsGenerator = new TransactionGenerator(TransactionGenerator.Types.SMS, actor, 1_000_000);
+    private static long delay = 5_000_000_000L; //for testing, to be removed
+
+    private static final TransactionGenerator voiceGenerator = new TransactionGenerator(TransactionGenerator.Types.VOICE, actor, delay);
+    private static final TransactionGenerator dataGenerator = new TransactionGenerator(TransactionGenerator.Types.DATA, actor, delay);
+    private static final TransactionGenerator smsGenerator = new TransactionGenerator(TransactionGenerator.Types.SMS, actor, delay);
 
     private static Thread voiceThread;
     private static Thread dataThread;
@@ -31,7 +34,9 @@ public class Main {
 
         //direct deadLetter to deadLetterListener actor
         actorSystem.eventStream().subscribe(deadLetterListener, DeadLetter.class);
-        //count how many unrecognized commands was received, stop thread after 3 unrecognized commands.
+
+        //count how many unrecognized commands was received,
+        //stop traffic generation after 3 unrecognized commands.
         int stopCounter =  0;
 
         outer:
@@ -49,48 +54,32 @@ public class Main {
                         System.out.println("Generator already running...");
                     else
                         startThreads();
-
                 }
-                case "stop" -> {
-                    stopThreads();
-                }
-                case "terminate" -> {
+                case "stop"          -> stopThreads();
+                case "setDelay"      -> updateDelayAll();
+                case "setDelayVoice" -> updateDelay(voiceGenerator);
+                case "setDelayData"  -> updateDelay(dataGenerator);
+                case "setDelaySms"   -> updateDelay(smsGenerator);
+                case "printDelay"    -> printDelay();
+                case "printStats"    -> printStats();
+                case "resetStats"    -> resetStats();
+                case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the set of msisdn from Hazelcast
+                case "terminate"     -> {
 
                     stopThreads();
                     sc.close();
-                    Clock.delay(1_000_000); //delay for 1ms to make sure threads are stoped before terminating akka system
+                    Clock.delay(1_000_000); //delay for 1ms to make sure threads are stopped before terminating akka system
                     actorSystem.terminate();
 
                     break outer;
-                }
-                case "setDelay" -> {
-                    updateDelayAll();
-                }
-                case "setDelayVoice" -> {
-                    updateDelay(voiceGenerator);
-                }
-                case "setDelayData" -> {
-                    updateDelay(dataGenerator);
-                }
-                case "setDelaySms" -> {
-                    updateDelay(smsGenerator);
-                }
-                case "printDelay" -> {
-                    printDelay();
-                }
-                case "printStats" -> {
-                    printStats();
-                }
-                case "resetStats" -> {
-                    resetStats();
                 }
                 default -> {
 
                     stopCounter++;
                     if(stopCounter > 3)
                         stopThreads();
-
-                    System.out.println("unrecognized command...");
+                    else
+                        System.out.println("unrecognized command...");
                 }
             }
         }

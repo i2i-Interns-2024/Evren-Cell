@@ -5,6 +5,7 @@ import org.sk.i2i.evren.TGF.Clock;
 import org.sk.i2i.evren.TGF.DTO.DataTransaction;
 import org.sk.i2i.evren.TGF.DTO.SmsTransaction;
 import org.sk.i2i.evren.TGF.DTO.VoiceTransaction;
+import org.sk.i2i.evren.TGF.RandomGenerator;
 
 public class TransactionGenerator implements Runnable{
 
@@ -19,10 +20,12 @@ public class TransactionGenerator implements Runnable{
     private long startTime = 0;
 
     /**
+     * @param type type of transaction to be generated
      * @param actor akka actor which will send transactions
      * @param delay delay between sending transactions in nanoseconds
      */
     public TransactionGenerator(Types type, ActorRef actor, long delay) {
+
         this.type = type;
         this.actor = actor;
         this.delay = delay;
@@ -35,6 +38,7 @@ public class TransactionGenerator implements Runnable{
      * @param maxTransactions max number of transactions to be sent, setting it to -1 will result in no limit
      */
     public TransactionGenerator(Types type, ActorRef actor, long delay, long maxTransactions) {
+
         this.type = type;
         this.actor = actor;
         this.delay = delay;
@@ -65,16 +69,36 @@ public class TransactionGenerator implements Runnable{
 
     private void sendTransaction() {
 
+        String msisdn = RandomGenerator.randomMsisdn();
+        int location = RandomGenerator.randomLocation();
+
         switch (type) {
-            case DATA ->
-                actor.tell(new DataTransaction("5461970089", 1, 7, 1), ActorRef.noSender());
-            case VOICE ->
-                actor.tell(new VoiceTransaction("5461970089", "5461970089", 1, 1), ActorRef.noSender());
-            case SMS ->
-                actor.tell(new SmsTransaction("5461970089", "5461970089", 1), ActorRef.noSender());
-
-        }
-
+            case DATA -> {
+                DataTransaction trans = new DataTransaction(
+                        msisdn,
+                        location,
+                        RandomGenerator.randomDataUsage(),
+                        RandomGenerator.randomRatingGroup());
+                actor.tell(trans, ActorRef.noSender());
+            }
+            case VOICE -> {
+                VoiceTransaction trans =  new VoiceTransaction(
+                        msisdn,
+                        RandomGenerator.randomMsisdn(),
+                        location,
+                        RandomGenerator.randomDuration()
+                );
+                actor.tell(trans, ActorRef.noSender());
+            }
+            case SMS -> {
+                SmsTransaction trans = new SmsTransaction(
+                        msisdn,
+                        RandomGenerator.randomMsisdn(),
+                        location
+                );
+                actor.tell(trans, ActorRef.noSender());
+            }
+        }//end switch
     }
 
     public void stopGeneration() {
