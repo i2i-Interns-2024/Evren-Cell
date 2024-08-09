@@ -71,3 +71,33 @@ getPackage
 -------------------------------
 
 
+
+
+getPackageName(msisdn)
+getUserIdByMSISDN(msisdn)
+
+getVoiceBalance(msisdn)
+updateVoiceBalance(msisdn, amount)
+
+getSmsBalance(msisdn)
+updateSmsBalance(msisdn, amount)
+
+getDataBalance(msisdn)
+updateDataBalance(msisdn, amount)
+
+
+---- KENAN İÇİN ---- 
+
+-- GET PACKAGE NAME BY MSISDN (MSISDN)
+
+-- GET CUSTOMER ID BY MSISDN (MSISDN)
+
+-- GET AMOUNT MINUTES BY MSISDN (MSISDN)
+-- UPDATE AMOUNT MINUTES BY MSISDN (AMOUNT,MSISDN)
+
+-- GET AMOUNT SMS BY MSISDN (MSISDN)
+-- UPDATE AMOUNT SMS BY MSISDN (AMOUNT,MSISDN)
+
+-- GET AMOUNT DATA BY MSISDN (MSISDN)
+-- UPDATE AMOUNT DATA BY MSISDN (AMOUNT,MSISDN)
+        
