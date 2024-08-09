@@ -19,13 +19,13 @@ public class Main {
             // VoltDB sunucusuna bağlanıyoruz
             client.createConnection("34.132.46.242:32803"); //usa server
 
-            ClientResponse response0 = client.callProcedure("SHOW_AMOUNT_DATA", "5551234567");
+            ClientResponse response0 = client.callProcedure("GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN", "5551234567");
 
             if (response0.getStatus() == ClientResponse.SUCCESS) {
                 VoltTable results = response0.getResults()[0];
                 while (results.advanceRow()) {
                     System.out.println(
-                            "AMOUNT_DATA: " + results.getLong("AMOUNT_DATA") /*+
+                            "AMOUNT_DATA: " + results.getLong("BAL_LVL_DATA") /*+
                                     ", MSISDN: " + results.getString("MSISDN") +
                                     ", NAME: " + results.getString("NAME") +
                                     ", SURNAME: " + results.getString("SURNAME") +
