@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: com.sk.i2i.evrencell.mq.Main
+
