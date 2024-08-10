@@ -28,7 +28,7 @@ public class PackageController {
     }
 
     @GetMapping("/getUserPackageByMsisdn")
-    public ResponseEntity<List<PackageDto>> getUserPackageByMsisdn (@RequestParam String msisdn){
+    public ResponseEntity<PackageDto> getUserPackageByMsisdn (@RequestParam String msisdn){
         return ResponseEntity.ok(packageService.getUserPackageByMsisdn(msisdn));
     }
 

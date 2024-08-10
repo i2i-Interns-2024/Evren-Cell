@@ -95,14 +95,13 @@ public class PackageRepository {
         return packageList;
     }
 
-    public List<Package> getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
+    public Package getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
         Client client = voltDBConnection.getClient();
-        ClientResponse clientResponse = client.callProcedure("GetPackageByMsisdn", msisdn);
+//        ClientResponse clientResponse = client.callProcedure("GetPackageByMsisdn", msisdn);
+        ClientResponse clientResponse = client.callProcedure("GET_PACKAGE_NAME_BY_MSISDN", msisdn);
         VoltTable tablePackageInfo = clientResponse.getResults()[0];
 
-        List<Package> packageInfo = new ArrayList<>();
-
-        while (tablePackageInfo.advanceRow()) {
+        if (tablePackageInfo.advanceRow()) {
             Integer packageId = (int) tablePackageInfo.getLong("PACKAGE_ID");
             String packageName = tablePackageInfo.getString("PACKAGE_NAME");
             double price = tablePackageInfo.getDouble("PRICE");
@@ -111,7 +110,7 @@ public class PackageRepository {
             Integer amountSms = (int) tablePackageInfo.getLong("AMOUNT_SMS");
             Integer period = (int) tablePackageInfo.getLong("PERIOD");
 
-            Package packageModel = Package.builder()
+            return Package.builder()
                     .packageId(packageId)
                     .packageName(packageName)
                     .price(price)
@@ -120,11 +119,9 @@ public class PackageRepository {
                     .amountSms(amountSms)
                     .period(period)
                     .build();
-
-            packageInfo.add(packageModel);
         }
 
-        return packageInfo;
+        throw new RuntimeException("No package found for the given msisdn");
     }
 
 

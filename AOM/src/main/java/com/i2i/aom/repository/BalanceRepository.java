@@ -1,6 +1,5 @@
 package com.i2i.aom.repository;
 
-import com.i2i.aom.constant.OracleQueries;
 import com.i2i.aom.dto.CustomerBalance;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
@@ -78,6 +77,7 @@ public class BalanceRepository {
         packageStmt.registerOutParameter(4, Types.INTEGER);
         packageStmt.registerOutParameter(5, Types.INTEGER);
         packageStmt.execute();
+//        System.out.println("select success");
 
         int amountMinutes = packageStmt.getInt(2);
         int amountSms = packageStmt.getInt(3);
@@ -102,6 +102,8 @@ public class BalanceRepository {
         balanceStmt.setTimestamp(6, sdate);
         balanceStmt.setTimestamp(7, edate);
         balanceStmt.execute();
+//        System.out.println("balance success");
+
         balanceStmt.close();
 
         conn.close();
