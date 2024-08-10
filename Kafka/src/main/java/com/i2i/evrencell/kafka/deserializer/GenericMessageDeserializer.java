@@ -1,4 +1,4 @@
-package com.sk.i2i.evrencell.mq;
+package com.i2i.evrencell.kafka.deserializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Deserializer;

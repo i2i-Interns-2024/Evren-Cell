@@ -1,29 +1,39 @@
-package com.sk.i2i.evrencell.mq;
+package com.i2i.evrencell.kafka.message;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class UsageRecord extends Message implements Serializable {
-
-    private String msisdn2;
+public class UsageRecordMessage {
+    private String callerMsisdn;
+    private String calleeMsisdn;
     private String usageType;
     private Integer usageDuration;
     private Timestamp usageDate;
 
-    public UsageRecord(String msisdn1, String msisdn2, String usageType, Integer usageDuration, Timestamp usageDate) {
-        super(msisdn1);
-        this.msisdn2 = msisdn2;
+    public UsageRecordMessage(String callerMsisdn, String calleeMsisdn, String usageType, Integer usageDuration, Timestamp usageDate) {
+        this.callerMsisdn = callerMsisdn;
+        this.calleeMsisdn = calleeMsisdn;
         this.usageType = usageType;
         this.usageDuration = usageDuration;
         this.usageDate = usageDate;
     }
 
-    public String getMsisdn2() {
-        return msisdn2;
+    public UsageRecordMessage() {
     }
 
-    public void setMsisdn2(String msisdn2) {
-        this.msisdn2 = msisdn2;
+    public String getCallerMsisdn() {
+        return callerMsisdn;
+    }
+
+    public void setCallerMsisdn(String callerMsisdn) {
+        this.callerMsisdn = callerMsisdn;
+    }
+
+    public String getCalleeMsisdn() {
+        return calleeMsisdn;
+    }
+
+    public void setCalleeMsisdn(String calleeMsisdn) {
+        this.calleeMsisdn = calleeMsisdn;
     }
 
     public String getUsageType() {
