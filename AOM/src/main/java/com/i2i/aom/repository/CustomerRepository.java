@@ -1,6 +1,7 @@
 package com.i2i.aom.repository;
 
 import com.i2i.aom.constant.OracleQueries;
+import com.i2i.aom.encryption.CustomerPasswordEncoder;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Customer;
@@ -9,8 +10,6 @@ import com.i2i.aom.request.RegisterCustomerRequest;
 import oracle.jdbc.OracleTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.voltdb.VoltTable;
 import org.voltdb.client.Client;
@@ -29,15 +28,18 @@ public class CustomerRepository {
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
     private final BalanceRepository balanceRepository;
+    private final CustomerPasswordEncoder customerPasswordEncoder;
     
     private static final Logger logger = Logger.getLogger(CustomerRepository.class.getName());
 
     public CustomerRepository(OracleConnection oracleConnection,
                               VoltDBConnection voltDBConnection,
-                              BalanceRepository balanceRepository) {
+                              BalanceRepository balanceRepository,
+                              CustomerPasswordEncoder customerPasswordEncoder) {
         this.oracleConnection = oracleConnection;
         this.voltDBConnection = voltDBConnection;
         this.balanceRepository = balanceRepository;
+        this.customerPasswordEncoder = customerPasswordEncoder;
     }
 
     //oracledbb
@@ -193,7 +195,7 @@ public class CustomerRepository {
 
         logger.info("Retrieved package id: " + packageId);
 
-        String encodedPassword = encodePassword(registerCustomerRequest.password());
+        String encodedPassword = customerPasswordEncoder.encrypt(registerCustomerRequest.password());
 
         CallableStatement customerStmt = connection.prepareCall("{call INSERT_CUSTOMER(?, ?, ?, ?, ?, ?, ?)}");
         customerStmt.setString(1, registerCustomerRequest.name());
@@ -207,7 +209,7 @@ public class CustomerRepository {
         customerStmt.close();
 
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT cust_id_sequence.CURRVAL FROM dual");
+        ResultSet rs = stmt.executeQuery(OracleQueries.SELECT_CUSTOMER_ID);
         int customerId = 0;
         if (rs.next()) {
             customerId = rs.getInt(1);
@@ -292,7 +294,7 @@ public class CustomerRepository {
                 registerCustomerRequest.surname(),
                 registerCustomerRequest.msisdn(),
                 registerCustomerRequest.email(),
-                encodePassword(registerCustomerRequest.password()),
+                customerPasswordEncoder.encrypt(registerCustomerRequest.password()),
                 new Timestamp(System.currentTimeMillis()),
                 registerCustomerRequest.TCNumber()
         );
@@ -312,11 +314,6 @@ public class CustomerRepository {
 
         client.close();
         return balanceResponse;
-    }
-
-    private static String encodePassword(String password) {
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        return passwordEncoder.encode(password);
     }
 
     private boolean customerExists(String msisdn, String email, String tcNo) throws SQLException, ClassNotFoundException {
