@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.sql.SQLException;
 
 @Service
@@ -40,7 +41,6 @@ public class AuthService {
             return voltResponse;
         }
 
-        // Store msisdn in Hazelcast map
 //         hazelcastService.put(registerCustomerRequest.msisdn(), registerCustomerRequest.msisdn());
 
         return ResponseEntity.ok("Customer registered successfully in both Oracle and VoltDB");
@@ -61,6 +61,5 @@ public class AuthService {
             return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
     }
-
 
 }

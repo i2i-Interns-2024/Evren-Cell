@@ -7,6 +7,7 @@ import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Customer;
 import com.i2i.aom.request.CreateBalanceRequest;
 import com.i2i.aom.request.RegisterCustomerRequest;
+import jakarta.el.ELManager;
 import oracle.jdbc.OracleTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -347,6 +348,58 @@ public class CustomerRepository {
         stmt.close();
         connection.close();
         return encodedPassword;
+
+    }
+
+
+    public boolean checkCustomerExists(String email, String tcNumber) throws
+                                                                            SQLException,
+                                                                            ClassNotFoundException,
+                                                                            IOException,
+                                                                            ProcCallException,
+                                                                            InterruptedException {
+        Connection connection = oracleConnection.getOracleConnection();
+        CallableStatement oracleCallableStatement = connection.prepareCall("{call CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO(?, ?, ?)}");
+        oracleCallableStatement.setString(1, email);
+        oracleCallableStatement.setString(2, tcNumber);
+        oracleCallableStatement.registerOutParameter(3, Types.INTEGER);
+        oracleCallableStatement.execute();
+        int oracleStatementReturnCount = oracleCallableStatement.getInt(3);
+        oracleCallableStatement.close();
+        connection.close();
+        boolean ifCustomerExistsInOracle = oracleStatementReturnCount > 0;
+
+        Client voltClient = voltDBConnection.getClient();
+        ClientResponse voltResponse = voltClient.callProcedure("CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO", email, tcNumber);
+        VoltTable voltTable = voltResponse.getResults()[0];
+        boolean ifCustomerExistsInVolt = false;
+        if(voltTable.advanceRow()){
+            ifCustomerExistsInVolt = voltTable.getLong(0) > 0;
+        }
+        voltClient.close();
+        return ifCustomerExistsInOracle && ifCustomerExistsInVolt;
+    }
+
+    public void updatePasswordInOracle(String email, String tcNumber, String encryptedPassword) throws
+                                                                                                    SQLException,
+                                                                                                    ClassNotFoundException {
+        Connection connection = oracleConnection.getOracleConnection();
+        CallableStatement updatePasswordInOracleStatement = connection.prepareCall("{call UPDATE_CUSTOMER_PASSWORD(?, ?, ?)}");
+        updatePasswordInOracleStatement.setString(1, email);
+        updatePasswordInOracleStatement.setString(2, tcNumber);
+        updatePasswordInOracleStatement.setString(3, encryptedPassword);
+        updatePasswordInOracleStatement.execute();
+        updatePasswordInOracleStatement.close();
+        connection.close();
+    }
+
+    public void updatePasswordInVoltDB(String email, String tcNumber, String encryptedPassword) throws
+                                                                                                    IOException,
+                                                                                                    ProcCallException,
+                                                                                                    InterruptedException {
+        Client client = voltDBConnection.getClient();
+        client.callProcedure("UPDATE_CUSTOMER_PASSWORD", encryptedPassword, email, tcNumber);
+        client.close();
 
     }
 
