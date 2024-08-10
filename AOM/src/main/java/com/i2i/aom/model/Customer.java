@@ -7,13 +7,13 @@ import java.util.Date;
 @Builder
 public class Customer {
     private Integer customerId;
-    private String msisdn;
-    private String name;
-    private String surname;
-    private String email;
-    private String password;
-    private String TCNumber;
-    private Date sDate;
+    private String  msisdn;
+    private String  name;
+    private String  surname;
+    private String  email;
+    private String  password;
+    private String  TCNumber;
+    private Date    sDate;
 
     public Customer(Integer customerId, String msisdn, String name, String surname, String email, String password,  String securityKey, Date sDate) {
         this.customerId = customerId;

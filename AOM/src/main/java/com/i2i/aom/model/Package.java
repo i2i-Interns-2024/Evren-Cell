@@ -5,14 +5,20 @@ import lombok.Builder;
 @Builder
 public class Package {
     private Integer packageId;
-    private String packageName;
-    private double price;
+    private String  packageName;
+    private double  price;
     private Integer amountMinutes;
     private Integer amountData;
     private Integer amountSms;
     private Integer period;
 
-    public Package(Integer packageId, String packageName, double price, Integer amountMinutes, Integer amountData, Integer amountSms, Integer period) {
+    public Package(Integer packageId,
+                   String packageName,
+                   double price,
+                   Integer amountMinutes,
+                   Integer amountData,
+                   Integer amountSms,
+                   Integer period) {
         this.packageId = packageId;
         this.packageName = packageName;
         this.price = price;
