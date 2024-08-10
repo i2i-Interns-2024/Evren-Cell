@@ -2,6 +2,8 @@ package com.i2i.aom.repository;
 
 import com.i2i.aom.constant.OracleQueries;
 import com.i2i.aom.encryption.CustomerPasswordEncoder;
+import com.i2i.aom.exception.CustomerNotFoundException;
+import com.i2i.aom.exception.PackageNotFoundException;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Customer;
@@ -43,46 +45,6 @@ public class CustomerRepository {
         this.customerPasswordEncoder = customerPasswordEncoder;
     }
 
-    //oracledbb
-//    public List<Customer> getAllCustomers() throws SQLException, ClassNotFoundException {
-//        List<Customer> customers = new ArrayList<>();
-//        Connection connection = oracleConnection.getOracleConnection();
-//        Statement statement = connection.createStatement();
-////        ResultSet resultSet = statement.executeQuery(OracleQueries.GET_ALL_CUSTOMERS);
-//
-//        //procedure
-//        CallableStatement callableStatement = connection.prepareCall("{call C##bilal.get_all_customers()}");
-//        ResultSet resultSet = callableStatement.executeQuery();
-//
-//        while (resultSet.next()){
-//            Integer customerId = resultSet.getInt("CUST_ID");
-//            String msisdn = resultSet.getString("MSISDN");
-//            String name = resultSet.getString("NAME");
-//            String surname = resultSet.getString("SURNAME");
-//            String email = resultSet.getString("EMAIL");
-//            Timestamp sdate = resultSet.getTimestamp("SDATE");
-//            String tcNo = resultSet.getString("TC_NO");
-//
-//            Customer customer = Customer.builder()
-//                    .customerId(customerId)
-//                    .msisdn(msisdn)
-//                    .email(email)
-//                    .name(name)
-//                    .surname(surname)
-//                    .sDate(sdate)
-//                    .TCNumber(tcNo)
-//                    .build();
-//            customers.add(customer);
-//        }
-//
-//        resultSet.close();
-//        callableStatement.close();
-//
-//        connection.close();
-//        return customers;
-//    }
-
-
     public List<Customer> getAllCustomers() throws SQLException, ClassNotFoundException {
         List<Customer> customers = new ArrayList<>();
         Connection connection = oracleConnection.getOracleConnection();
@@ -121,57 +83,6 @@ public class CustomerRepository {
         return customers;
     }
 
-//    public ResponseEntity createUserInOracle(RegisterCustomerRequest registerCustomerRequest) throws SQLException, ClassNotFoundException {
-//        Connection connection = oracleConnection.getOracleConnection();
-//
-//        PreparedStatement packageStmt = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_ID);
-//        packageStmt.setString(1, registerCustomerRequest.packageName());
-//        ResultSet packageResultSet = packageStmt.executeQuery();
-//
-//        if (!packageResultSet.next()) {
-//            packageStmt.close();
-//            connection.close();
-//            return new ResponseEntity<>("Package not found IN ORACLE", HttpStatus.NOT_FOUND);
-//        }
-//
-//        int packageId = packageResultSet.getInt("PACKAGE_ID");
-//        packageStmt.close();
-//
-//        logger.info("Retrieved package id: " + packageId);
-//
-//        String encodedPassword = encodePassword(registerCustomerRequest.password());
-//
-//        String insertCustomerSQL = "INSERT INTO CUSTOMER (CUST_ID, NAME, SURNAME, MSISDN, EMAIL, PASSWORD, SDATE, TC_NO) " +
-//                "VALUES (cust_id_sequence.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
-//        PreparedStatement customerStmt = connection.prepareStatement(insertCustomerSQL, new String[]{"CUST_ID"});
-//        customerStmt.setString(1, registerCustomerRequest.name());
-//        customerStmt.setString(2, registerCustomerRequest.surname());
-//        customerStmt.setString(3, registerCustomerRequest.msisdn());
-//        customerStmt.setString(4, registerCustomerRequest.email());
-//        customerStmt.setString(5, encodedPassword);
-//        customerStmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-//        customerStmt.setString(7, registerCustomerRequest.TCNumber());
-//        customerStmt.executeUpdate();
-//
-//        ResultSet generatedKeys = customerStmt.getGeneratedKeys();
-//        if (generatedKeys.next()) {
-//            int customerId = generatedKeys.getInt(1);
-//
-//            logger.info("Generated customer ID: " + customerId);
-//
-//            CreateBalanceRequest createBalanceRequest = CreateBalanceRequest.builder()
-//                    .customerId(customerId)
-//                    .packageId(packageId)
-//                    .build();
-//            balanceRepository.createOracleBalance(createBalanceRequest);
-//        }
-//
-//        customerStmt.close();
-//        connection.close();
-//
-//        return new ResponseEntity<>("Customer created successfully", HttpStatus.CREATED);
-//    }
-
 
     public ResponseEntity createUserInOracle(RegisterCustomerRequest registerCustomerRequest) throws SQLException, ClassNotFoundException {
 
@@ -191,7 +102,7 @@ public class CustomerRepository {
 
         if (packageId == 0) {
             connection.close();
-            return new ResponseEntity<>("Package not found IN ORACLE", HttpStatus.NOT_FOUND);
+            throw new PackageNotFoundException("Package Not Found IN ORACLE.");
         }
 
         logger.info("Retrieved package id: " + packageId);
@@ -262,7 +173,7 @@ public class CustomerRepository {
             }
         }
         client.close();
-        return Optional.empty();
+        throw new CustomerNotFoundException("Customer not found with this MSISDN: " + msisdn);
     }
 
     public ResponseEntity createUserInVoltdb(RegisterCustomerRequest registerCustomerRequest) throws IOException, ProcCallException, InterruptedException {
@@ -402,5 +313,38 @@ public class CustomerRepository {
         client.close();
 
     }
+
+    public void insertNotificationLogInOracle(String notificationType, Timestamp notificationTime, int customerId) throws SQLException, ClassNotFoundException {
+        Connection connection = oracleConnection.getOracleConnection();
+        CallableStatement notificationLogCallabaleStatement = connection.prepareCall("{call INSERT_NOTIFICATION_LOG(?, ?, ?)}");
+        notificationLogCallabaleStatement.setString(1, notificationType);
+        notificationLogCallabaleStatement.setTimestamp(2, notificationTime);
+        notificationLogCallabaleStatement.setInt(3, customerId);
+        notificationLogCallabaleStatement.execute();
+        notificationLogCallabaleStatement.close();
+        connection.close();
+    }
+
+    public void insertNotificationLogInVoltDB(String notificationType, Timestamp notificationTime, int customerId) throws
+            IOException,
+            ProcCallException,
+            InterruptedException {
+
+        Client client = voltDBConnection.getClient();
+        ClientResponse maxIdResponse = client.callProcedure("GET_MAX_NOTIFICATION_ID");
+        VoltTable maxIdTable = maxIdResponse.getResults()[0];
+        int maxNotificationId = 0;
+        if (maxIdTable.advanceRow()){
+            maxNotificationId = (int) maxIdTable.getLong("MAX_NOTIFICATION_ID");
+        }
+
+        int newNotificationId = maxNotificationId + 1;
+        client.callProcedure("INSERT_NOTIFICATION_LOG", newNotificationId, notificationType, notificationTime, customerId);
+//        client.callProcedure("InsertNotificationLog", newNotificationId, notificationType, notificationTime, customerId);
+        client.close();
+
+    }
+
+
 
 }

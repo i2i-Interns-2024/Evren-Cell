@@ -1,6 +1,7 @@
 package com.i2i.aom.repository;
 
 import com.i2i.aom.dto.PackageDetails;
+import com.i2i.aom.exception.PackageNotFoundException;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Package;
@@ -26,38 +27,6 @@ public class PackageRepository {
         this.oracleConnection = oracleConnection;
         this.voltDBConnection = voltDBConnection;
     }
-
-//    public List<Package> getAllPackages() throws SQLException, ClassNotFoundException {
-//        Connection connection = oracleConnection.getOracleConnection();
-//        System.out.println(connection);
-//        Statement statement = connection.createStatement();
-//        ResultSet resultSet = statement.executeQuery(OracleQueries.SELECT_ALL_PACKAGES);
-//        List<Package> packageList = new ArrayList<>();
-//        while (resultSet.next()) {
-//            Integer packageId = resultSet.getInt("PACKAGE_ID");
-//            String packageName = resultSet.getString("PACKAGE_NAME");
-//            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
-//            Integer amountData = resultSet.getInt("AMOUNT_DATA");
-//            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
-//            double price = resultSet.getDouble("PRICE");
-//            Integer period = resultSet.getInt("PERIOD");
-//
-//            Package packageModel = Package.builder()
-//                    .packageId(packageId)
-//                    .packageName(packageName)
-//                    .amountMinutes(amountMinutes)
-//                    .amountData(amountData)
-//                    .price(price)
-//                    .amountSms(amountSms)
-//                    .period(period)
-//                    .build();
-//            packageList.add(packageModel);
-//        }
-//
-//        connection.close();
-//        return packageList;
-//
-//    }
 
 
     public List<Package> getAllPackages() throws SQLException, ClassNotFoundException {
@@ -98,7 +67,8 @@ public class PackageRepository {
     public Package getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
         Client client = voltDBConnection.getClient();
 //        ClientResponse clientResponse = client.callProcedure("GetPackageByMsisdn", msisdn);
-        ClientResponse clientResponse = client.callProcedure("GET_PACKAGE_NAME_BY_MSISDN", msisdn);
+//        ClientResponse clientResponse = client.callProcedure("GET_PACKAGE_NAME_BY_MSISDN", msisdn);
+        ClientResponse clientResponse = client.callProcedure("GET_PACKAGE_INFO_BY_MSISDN", msisdn);
         VoltTable tablePackageInfo = clientResponse.getResults()[0];
 
         if (tablePackageInfo.advanceRow()) {
@@ -121,34 +91,8 @@ public class PackageRepository {
                     .build();
         }
 
-        throw new RuntimeException("No package found for the given msisdn");
+        throw new PackageNotFoundException("No package found for the given msisdn");
     }
-
-
-//    public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
-//        Connection connection = oracleConnection.getOracleConnection();
-//        PreparedStatement preparedStatement = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS_NAME);
-//        preparedStatement.setString(1, packageName);
-//        ResultSet resultSet = preparedStatement.executeQuery();
-//
-//        if (resultSet.next()) {
-//            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
-//            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
-//            Integer amountData = resultSet.getInt("AMOUNT_DATA");
-//
-//            connection.close();
-//            return Optional.of(PackageDetails.builder()
-//                    .packageName(packageName)
-//                    .amountMinutes(amountMinutes)
-//                    .amountSms(amountSms)
-//                    .amountData(amountData)
-//                    .build());
-//        } else {
-//            connection.close();
-//            return Optional.empty();
-//        }
-//    }
-
 
     public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
         Connection connection = oracleConnection.getOracleConnection();
@@ -166,15 +110,15 @@ public class PackageRepository {
         callableStatement.close();
         connection.close();
 
-        if (amountMinutes != 0 || amountSms != 0 || amountData != 0) {
-            return Optional.of(PackageDetails.builder()
-                    .packageName(packageName)
-                    .amountMinutes(amountMinutes)
-                    .amountSms(amountSms)
-                    .amountData(amountData)
-                    .build());
-        } else {
-            return Optional.empty();
+        if (amountMinutes == 0 && amountSms == 0 && amountData == 0) {
+            throw new PackageNotFoundException("Package details not found for package: " + packageName);
         }
+
+        return Optional.of(PackageDetails.builder()
+                .packageName(packageName)
+                .amountMinutes(amountMinutes)
+                .amountSms(amountSms)
+                .amountData(amountData)
+                .build());
     }
 }
