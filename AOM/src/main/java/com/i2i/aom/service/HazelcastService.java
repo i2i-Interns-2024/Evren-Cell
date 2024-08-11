@@ -14,12 +14,18 @@ public class HazelcastService {
 
     private static HazelcastInstance hazelcast;
 
+    /**
+     * Initialize hazelcast client
+     */
     @PostConstruct
     public void init() {
         ClientConfig config = HazelcastConfiguration.getConfig();
         hazelcast = HazelcastClient.newHazelcastClient(config);
     }
 
+    /**
+     * Destroy hazelcast client
+     */
     @PreDestroy
     public void destroy() {
         if (hazelcast != null) {
@@ -27,6 +33,13 @@ public class HazelcastService {
         }
     }
 
+    /**
+     * Put key value pair to hazelcast map
+     *
+     * @param key   key
+     * @param value value
+     * @return result message
+     */
     public String put(String key, String value) {
         try {
             IMap<Object, Object> map = hazelcast.getMap("evrencell");

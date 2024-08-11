@@ -27,6 +27,13 @@ public class CustomerPasswordEncoder {
         key = skf.generateSecret(ks);
     }
 
+    /**
+     * Encrypts the given string
+     * encrypt function encrypts the given string using DESede encryption scheme
+     * and returns the encrypted string
+     * @param unencryptedString
+     * @return encryptedString
+     */
     public String encrypt(String unencryptedString) {
         String encryptedString = null;
         try {
@@ -40,6 +47,13 @@ public class CustomerPasswordEncoder {
         return encryptedString;
     }
 
+    /**
+     * Decrypts the given string
+     * decrypt function decrypts the given string using DESede encryption scheme
+     * and returns the decrypted string
+     * @param encryptedString
+     * @return decryptedText
+     */
     public String decrypt(String encryptedString) {
         String decryptedText = null;
         try {

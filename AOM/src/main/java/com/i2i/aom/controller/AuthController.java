@@ -13,6 +13,10 @@ import org.voltdb.client.ProcCallException;
 import java.io.IOException;
 import java.sql.SQLException;
 
+
+/**
+ * Controller class for Authentication related operations
+ */
 @RestController
 @RequestMapping("/v1/api/auth")
 public class AuthController {
@@ -23,13 +27,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity registerCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest)
+    public ResponseEntity<String> registerCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest)
             throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
         return authService.registerCustomer(registerCustomerRequest);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseEntity<String>> login(@RequestBody LoginCustomerRequest loginCustomerRequest) throws SQLException, ClassNotFoundException {
+    public ResponseEntity<ResponseEntity<String>> login(@RequestBody LoginCustomerRequest loginCustomerRequest) throws IOException, InterruptedException, ProcCallException {
         return ResponseEntity.ok(authService.login(loginCustomerRequest));
     }
 }
