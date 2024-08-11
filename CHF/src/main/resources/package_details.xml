@@ -1,0 +1,56 @@
+<packages>
+    <package>
+        <packageId>1</packageId>
+        <packageName>EVRENCELL MERKÜR</packageName>
+        <price>50</price>
+        <amountMinutes>1000</amountMinutes>
+        <amountData>3072</amountData>
+        <amountSms>1000</amountSms>
+        <period>30</period>
+    </package>
+    <package>
+        <packageId>2</packageId>
+        <packageName>EVRENCELL MARS</packageName>
+        <price>100</price>
+        <amountMinutes>1500</amountMinutes>
+        <amountData>5120</amountData>
+        <amountSms>1000</amountSms>
+        <period>30</period>
+    </package>
+    <package>
+        <packageId>3</packageId>
+        <packageName>EVRENCELL DÜNYA</packageName>
+        <price>120</price>
+        <amountMinutes>2000</amountMinutes>
+        <amountData>7168</amountData>
+        <amountSms>1500</amountSms>
+        <period>30</period>
+    </package>
+    <package>
+        <packageId>4</packageId>
+        <packageName>EVRENCELL NEPTÜN</packageName>
+        <price>150</price>
+        <amountMinutes>2000</amountMinutes>
+        <amountData>10240</amountData>
+        <amountSms>1500</amountSms>
+        <period>30</period>
+    </package>
+    <package>
+        <packageId>5</packageId>
+        <packageName>EVRENCELL SATÜRN</packageName>
+        <price>180</price>
+        <amountMinutes>2000</amountMinutes>
+        <amountData>15360</amountData>
+        <amountSms>2000</amountSms>
+        <period>30</period>
+    </package>
+    <package>
+        <packageId>6</packageId>
+        <packageName>EVRENCELL JÜPİTER</packageName>
+        <price>225</price>
+        <amountMinutes>2500</amountMinutes>
+        <amountData>20480</amountData>
+        <amountSms>5000</amountSms>
+        <period>30</period>
+    </package>
+</packages>
