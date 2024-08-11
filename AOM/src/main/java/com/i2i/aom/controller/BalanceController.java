@@ -8,6 +8,10 @@ import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
 
+
+/**
+ * Controller class for Balance related operations
+ */
 @RestController
 @RequestMapping("/v1/api/balance")
 public class BalanceController {

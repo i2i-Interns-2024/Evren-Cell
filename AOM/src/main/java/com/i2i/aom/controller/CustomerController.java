@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+
+/**
+ * Controller class for Customer related operations
+ */
 @RestController
 @RequestMapping("/v1/api/customer")
 public class CustomerController {

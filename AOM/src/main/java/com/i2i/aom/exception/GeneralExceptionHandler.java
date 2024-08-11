@@ -1,8 +1,6 @@
 package com.i2i.aom.exception;
 
 import jakarta.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -19,8 +17,6 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
-
-    Logger logger = LoggerFactory.getLogger(GeneralExceptionHandler.class);
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(@NotNull MethodArgumentNotValidException ex,
@@ -42,14 +38,14 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(CustomerNotFoundException.class)
-    public ResponseEntity<HttpResponse> customerNotFoundException(CustomerNotFoundException customerNotFoundException){
-        return createHttpResponse(HttpStatus.NOT_FOUND, customerNotFoundException.getMessage());
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<HttpResponse> customerNotFoundException(NotFoundException notFoundException){
+        return createHttpResponse(HttpStatus.NOT_FOUND, notFoundException.getMessage());
     }
 
-    @ExceptionHandler(PackageNotFoundException.class)
-    public ResponseEntity<HttpResponse> customerNotFoundException(PackageNotFoundException packageNotFoundException){
-        return createHttpResponse(HttpStatus.NOT_FOUND, packageNotFoundException.getMessage());
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<HttpResponse> unauthorizedException(UnauthorizedException unauthorizedException){
+        return createHttpResponse(HttpStatus.UNAUTHORIZED, unauthorizedException.getMessage());
     }
 
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message){

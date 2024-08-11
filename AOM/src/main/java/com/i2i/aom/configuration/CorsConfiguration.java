@@ -7,6 +7,13 @@ import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class CorsConfiguration {
+
+
+    /**
+     * This method is used to configure the cors filter
+     * We are allowing all origins, headers and methods
+     * @return CorsFilter
+     */
     @Bean
     public CorsFilter corsFilter() {
         org.springframework.web.cors.CorsConfiguration corsConfiguration = new org.springframework.web.cors.CorsConfiguration();

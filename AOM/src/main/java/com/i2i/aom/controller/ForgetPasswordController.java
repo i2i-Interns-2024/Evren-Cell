@@ -13,6 +13,10 @@ import org.voltdb.client.ProcCallException;
 import java.io.IOException;
 import java.sql.SQLException;
 
+
+/**
+ * Controller class for ForgetPassword related operations
+ */
 @RestController
 @RequestMapping("/v1/api/forgetPassword")
 public class ForgetPasswordController {

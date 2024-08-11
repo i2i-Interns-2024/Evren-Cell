@@ -4,6 +4,11 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 
+/**
+ * OpenAPI configuration class for Evrencell project
+ * Contains information about the project
+ * It can be reached from the /swagger-ui.html endpoint
+ */
 @OpenAPIDefinition(
         info = @Info(
                 contact = @Contact(
@@ -15,5 +20,4 @@ import io.swagger.v3.oas.annotations.info.Info;
                 version = "1.0"
         )
 )
-public class OpenApiConfiguration {
-}
+public class OpenApiConfiguration { }

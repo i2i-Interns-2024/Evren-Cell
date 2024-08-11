@@ -15,6 +15,14 @@ public class BalanceService {
         this.balanceRepository = balanceRepository;
     }
 
+    /**
+     * This method is used to get the remaining customer balance by customer msisdn
+     * @param msisdn
+     * @return CustomerBalance
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ProcCallException
+     */
     public CustomerBalance getRemainingCustomerBalance(String msisdn) throws IOException, InterruptedException, ProcCallException {
         return balanceRepository.getRemainingCustomerBalanceByMsisdn(msisdn);
     }
