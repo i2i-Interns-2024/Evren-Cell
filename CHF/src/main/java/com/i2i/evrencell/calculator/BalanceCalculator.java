@@ -84,33 +84,31 @@ public class BalanceCalculator {
         kafkaOperator.sendKafkaUpdatedBalance(type, msisdn, updatedBalance);
     }
 
-    private void checkUsageThreshold(String type, String msisdn, int updatedUsage) {
+    private void checkUsageThreshold(String type, String msisdn, int currentBalance) {
         UserDetails userDetails = voltdbOperator.getUserDetails(msisdn);
         int packageId = userDetails.getPackageId();
 
         PackageDetails packageDetails = packageDetailsReader.getPackageDetailsById(packageId);
 
-        int threshold80, threshold100;
+        int threshold80;
+        int threshold100 = 0;
         switch (type) {
             case "data":
-                threshold80 = (int) (packageDetails.getDataAmount() * 0.80);
-                threshold100 = packageDetails.getDataAmount();
+                threshold80 = (int) (packageDetails.getDataAmount() * 0.20);
                 break;
             case "sms":
-                threshold80 = (int) (packageDetails.getSmsAmount() * 0.80);
-                threshold100 = packageDetails.getSmsAmount();
+                threshold80 = (int) (packageDetails.getSmsAmount() * 0.20);
                 break;
             case "voice":
-                threshold80 = (int) (packageDetails.getVoiceAmount() * 0.80);
-                threshold100 = packageDetails.getVoiceAmount();
+                threshold80 = (int) (packageDetails.getVoiceAmount() * 0.20);
                 break;
             default:
                 return;
         }
 
-        if (updatedUsage >= threshold100) {
+        if (currentBalance <= threshold100) {
             kafkaOperator.sendKafkaUsageThresholdMessage(type, msisdn, "100%");
-        } else if (updatedUsage >= threshold80) {
+        } else if (currentBalance <= threshold80) {
             kafkaOperator.sendKafkaUsageThresholdMessage(type, msisdn, "80%");
         }
     }
