@@ -75,7 +75,6 @@ public class AuthService {
         if (encodedPassword == null) {
             return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
-        System.out.println("MATCH: " + loginCustomerRequest.password() + " " +  encodedPassword);
         String decodedPassword = customerPasswordEncoder.decrypt(encodedPassword);
         boolean isPasswordMatch = loginCustomerRequest.password().equals(decodedPassword);
         if (isPasswordMatch) {
