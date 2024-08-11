@@ -8,7 +8,6 @@ import org.sk.i2i.evren.TGF.trafficGenerators.TransactionGenerator;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.Set;
 
 
 public class Main {
@@ -20,11 +19,9 @@ public class Main {
     private static final ActorRef actor = actorSystem.actorOf(Props.create(AkkaActor.class), "TGFActor");
     private static final ActorRef deadLetterListener = actorSystem.actorOf(Props.create(DeadLetterListener.class, deadLetterStats), "deadLetterListener");
 
-    private static long delay = 5_000_000_000L; //for testing, to be removed
-
-    private static final TransactionGenerator voiceGenerator = new TransactionGenerator(TransactionGenerator.Types.VOICE, actor, delay);
-    private static final TransactionGenerator dataGenerator = new TransactionGenerator(TransactionGenerator.Types.DATA, actor, delay);
-    private static final TransactionGenerator smsGenerator = new TransactionGenerator(TransactionGenerator.Types.SMS, actor, delay);
+    private static final TransactionGenerator voiceGenerator = new TransactionGenerator(TransactionGenerator.Types.VOICE, actor, 50000000L);
+    private static final TransactionGenerator dataGenerator = new TransactionGenerator(TransactionGenerator.Types.DATA, actor, 5000000L);
+    private static final TransactionGenerator smsGenerator = new TransactionGenerator(TransactionGenerator.Types.SMS, actor, 500000000L);
 
     private static Thread voiceThread;
     private static Thread dataThread;
@@ -153,9 +150,11 @@ public class Main {
     private static void updateDelayAll() {
         try {
             System.out.println("enter delay time:");
-            dataGenerator.setDelay(sc.nextLong());
-            smsGenerator.setDelay(sc.nextLong());
-            voiceGenerator.setDelay(sc.nextLong());
+            long newDelay = sc.nextLong();
+
+            dataGenerator.setDelay(newDelay);
+            smsGenerator.setDelay(newDelay);
+            voiceGenerator.setDelay(newDelay);
 
         } catch (InputMismatchException e) {
             System.out.println("unsupported input format...");

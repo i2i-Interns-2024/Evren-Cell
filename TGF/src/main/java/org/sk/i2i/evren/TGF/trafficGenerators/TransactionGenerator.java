@@ -1,11 +1,11 @@
 package org.sk.i2i.evren.TGF.trafficGenerators;
 
 import akka.actor.ActorRef;
+import org.sk.i2i.evren.DataTransaction;
+import org.sk.i2i.evren.SmsTransaction;
 import org.sk.i2i.evren.TGF.Clock;
-import org.sk.i2i.evren.TGF.DTO.DataTransaction;
-import org.sk.i2i.evren.TGF.DTO.SmsTransaction;
-import org.sk.i2i.evren.TGF.DTO.VoiceTransaction;
 import org.sk.i2i.evren.TGF.RandomGenerator;
+import org.sk.i2i.evren.VoiceTransaction;
 
 public class TransactionGenerator implements Runnable{
 
@@ -64,7 +64,7 @@ public class TransactionGenerator implements Runnable{
 
         }
 
-        System.out.println("traffic generation stopped...");
+        System.out.println(type + " traffic generation stopped...");
     }
 
     private void sendTransaction() {

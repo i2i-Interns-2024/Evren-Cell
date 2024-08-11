@@ -1,4 +1,4 @@
-package org.sk.i2i.evren.TGF.DTO;
+package org.sk.i2i.evren;
 
 public class SmsTransaction {
     private final String senderMsisdn;

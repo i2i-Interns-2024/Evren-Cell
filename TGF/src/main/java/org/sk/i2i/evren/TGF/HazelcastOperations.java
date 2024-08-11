@@ -9,6 +9,9 @@ import com.typesafe.config.ConfigFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 public class HazelcastOperations {
 
@@ -19,6 +22,12 @@ public class HazelcastOperations {
 
         clientConfig.setClusterName(config.getString("hazelcast.cluster-name"));
         clientConfig.getNetworkConfig().addAddress(config.getString("hazelcast.network.address"));
+
+        java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
+        rootLogger.setLevel(Level.FINE);
+        for (Handler h : rootLogger.getHandlers()) {
+            h.setLevel(Level.WARNING);
+        }
     }
 
     public List<String> getAllMsisdn() {
@@ -28,9 +37,9 @@ public class HazelcastOperations {
 
         List<String> msisdnSet = new ArrayList<>(map.keySet());
 
-        for (String msisdn : msisdnSet) {
-            System.out.println(msisdn);
-        }
+//        for (String msisdn : msisdnSet) {
+//            System.out.println(msisdn);
+//        }
 
         client.shutdown();
 
