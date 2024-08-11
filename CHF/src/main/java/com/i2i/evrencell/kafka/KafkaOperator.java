@@ -37,7 +37,7 @@ public class KafkaOperator {
 
     private Properties loadKafkaProperties() {
         Properties properties = new Properties();
-        String configFilePath = "C:\\Users\\ikena\\Desktop\\CHF\\src\\main\\resources\\kafka.conf";
+        String configFilePath = "CHF/src/main/resources/kafka.conf";
         try (InputStream input = new FileInputStream(configFilePath)) {
             properties.load(input);
         } catch (Exception e) {

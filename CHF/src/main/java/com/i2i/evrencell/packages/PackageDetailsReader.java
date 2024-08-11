@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 public class PackageDetailsReader {
     private static final Logger logger = Logger.getLogger(PackageDetailsReader.class.getName());
-    private static final String XML_FILE_PATH = "C:\\Users\\ikena\\Desktop\\CHF\\src\\main\\resources\\package_details.xml";
+    private static final String XML_FILE_PATH = "CHF/src/main/resources/package_details.xml";
     private final Map<Integer, PackageDetails> packageDetailsByIdMap = new HashMap<>();
 
     public PackageDetailsReader() {
