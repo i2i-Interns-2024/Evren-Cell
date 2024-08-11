@@ -8,7 +8,6 @@ public class DataMessage extends Message implements Serializable {
     private String msisdn;
     private int dataUsage;
     private int rGroup;
-    private Date date;
 
     public DataMessage(int location, String msisdn, int dataUsage, int rGroup) {
         super(location, msisdn);
@@ -16,7 +15,6 @@ public class DataMessage extends Message implements Serializable {
         this.msisdn = msisdn;
         this.dataUsage = dataUsage;
         this.rGroup = rGroup;
-        this.date = new Date();
     }
 
     public int getLocation() {
@@ -35,10 +33,6 @@ public class DataMessage extends Message implements Serializable {
         return rGroup;
     }
 
-    public Date getDate() {
-        return date;
-    }
-
     public void setLocation(int location) {
         this.location = location;
     }
@@ -55,7 +49,4 @@ public class DataMessage extends Message implements Serializable {
         this.rGroup = rGroup;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
 }
