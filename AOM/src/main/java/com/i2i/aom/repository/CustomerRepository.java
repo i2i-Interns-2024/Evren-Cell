@@ -211,7 +211,6 @@ public class CustomerRepository {
         if (resultSet.next()) {
             encodedPassword = resultSet.getString("PASSWORD");
         }
-        System.out.println("ENCODED PASSWORD: " + encodedPassword);
         resultSet.close();
         stmt.close();
         connection.close();

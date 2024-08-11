@@ -101,7 +101,6 @@ public class BalanceRepository {
 
 
         ClientResponse packageResponse = client.callProcedure("GET_PACKAGE_INFO_BY_PACKAGE_ID", createBalanceRequest.packageId());
-        System.out.println(packageResponse.getResults()[0]);
         VoltTable packageTable = packageResponse.getResults()[0];
 
         if (!packageTable.advanceRow()) {
