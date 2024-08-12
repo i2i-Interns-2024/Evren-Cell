@@ -12,61 +12,17 @@ import java.util.Date;
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException, ProcCallException {
 
-        //mesaj
         double startTime = System.currentTimeMillis();
-
         VoltdbOperator voltdbOperator = new VoltdbOperator();
 
-       // voltdbOperator.updateDataBalance(5679, "5537530253");
+        //voltdbOperator.updatePassword("buBenimYepyeniParolam", "john.doe@example.com","12345678901");
+        //System.out.println(voltdbOperator.getCustomerIdByEmailAndTc("john.doe@example.com","12345678901"));
 
-        //System.out.println(voltdbOperator.getMaxCustomerId());
-
-        //System.out.println(voltdbOperator.getPackageIdByName("EVRENCELL MARS"));
-
-        //voltdbOperator.insertCustomer(72,"eno","meno","cenno","senno","zenno", new Timestamp(System.currentTimeMillis()),"nenno");
-
-        voltdbOperator.insertBalance(58,3,72,55555,5555,5555555,new Timestamp(System.currentTimeMillis()),new Timestamp(System.currentTimeMillis()));
-
-       /* System.out.println(voltdbOperator.getCustomerPassword("5537030253"));
-        System.out.println(voltdbOperator.getMaxBalanceId());
-
-        VoltPackage package1 = new VoltPackage();
-
-        package1 = (VoltPackage) voltdbOperator.getPackageByMsisdn("5551234567");
-        System.out.println(package1);
-
-        VoltCustomer customer1 = new VoltCustomer();
-        System.out.println(voltdbOperator.getCustomerByMsisdn("5551234567"));
-*/
+        System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
 
 
         double endTime = System.currentTimeMillis();
         double elapsedTime = endTime - startTime;
         System.out.println("Elapsed time: " + elapsedTime);
-
-
-        /*ClientConfig clientConfig = new ClientConfig();
-        Client client = ClientFactory.createClient(clientConfig);
-
-        try {
-            client.createConnection("34.132.46.242:32803"); //usa server
-
-            ClientResponse response0 = client.callProcedure("GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN", "5551234567");
-
-            if (response0.getStatus() == ClientResponse.SUCCESS) {
-                VoltTable results = response0.getResults()[0];
-                while (results.advanceRow()) {
-                    System.out.println(
-                            "AMOUNT_DATA: " + results.getLong("BAL_LVL_DATA"));
-                }
-            } else {
-                System.out.println("Procedure call failed: " + response0.getStatusString());
-            }
-
-            // Bağlantıyı kapatıyoruz
-            client.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
     }
 }
