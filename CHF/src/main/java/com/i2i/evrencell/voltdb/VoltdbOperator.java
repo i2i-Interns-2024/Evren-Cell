@@ -45,22 +45,11 @@ public class VoltdbOperator {
     }
 
     public int getDataBalance(String msisdn) {
-        String procedureName = "GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN";
-        try {
-            ClientResponse response = client.callProcedure(procedureName, msisdn);
-            VoltTable resultTable = response.getResults()[0];
-            if (resultTable.advanceRow()) {
-                return (int) resultTable.getLong(0);
-            } else {
-                throw new RuntimeException("No data returned from procedure");
-            }
-        } catch (IOException | ProcCallException e) {
-            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
-        }
+        return handleProcedure("GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN", msisdn);
     }
 
     public int getVoiceBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_AMOUNT_VOICE_BY_MSISDN", msisdn);
+        return handleProcedure("GET_CUSTOMER_AMOUNT_MINUTES_BY_MSISDN", msisdn);
     }
 
     public int getSmsBalance(String msisdn) {
@@ -72,7 +61,7 @@ public class VoltdbOperator {
     }
 
     public void updateVoiceBalance(String msisdn, int voiceUsage) {
-        handleProcedure("UPDATE_CUSTOMER_AMOUNT_VOICE_BY_MSISDN", msisdn, voiceUsage);
+        handleProcedure("UPDATE_CUSTOMER_AMOUNT_MINUTES_BY_MSISDN", msisdn, voiceUsage);
     }
 
     public void updateSmsBalance(String msisdn, int smsUsage) {
