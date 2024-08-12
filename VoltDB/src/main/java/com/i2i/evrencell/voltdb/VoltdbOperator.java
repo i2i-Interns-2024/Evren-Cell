@@ -91,7 +91,11 @@ public class VoltdbOperator {
 
 
     public void insertCustomer(int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
-        handleProcedureInsert("INSERT_NEW_CUSTOMER", cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
+        handleProcedureInsertCustomer("INSERT_NEW_CUSTOMER", cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
+    }
+
+    public void insertBalance(int balance_id, int package_id, int cust_id, int bal_lvl_minutes, int bal_lvl_sms, int bal_lvl_data, Timestamp sdate, Timestamp edate) {
+        handleProcedureInsertBalance("INSERT_BALANCE_TO_CUSTOMER", balance_id, cust_id, package_id, bal_lvl_minutes, bal_lvl_sms, bal_lvl_data, sdate, edate);
     }
 
 
@@ -266,7 +270,7 @@ public class VoltdbOperator {
         }
     }
 
-    private void handleProcedureInsert(String procedureName, int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
+    private void handleProcedureInsertCustomer(String procedureName, int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
         try {
             ClientResponse response = client.callProcedure(procedureName, cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
             if (response.getStatus() != ClientResponse.SUCCESS) {
@@ -278,7 +282,20 @@ public class VoltdbOperator {
         }
     }
 
-    
+
+    private void handleProcedureInsertBalance(String procedureName, int balance_id, int cust_id, int package_id, int bal_lvl_minutes, int bal_lvl_sms, int bal_lvl_data, Timestamp sdate, Timestamp edate) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, balance_id, cust_id, package_id, bal_lvl_minutes, bal_lvl_sms, bal_lvl_data, sdate, edate);
+            if (response.getStatus() != ClientResponse.SUCCESS) {
+                throw new RuntimeException("Procedure call failed: " + response.getStatusString());
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+
 
     public void close() {
         if (client != null) {
