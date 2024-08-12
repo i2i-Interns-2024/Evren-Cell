@@ -1,23 +1,41 @@
 package com.i2i.evrencell;
 
-import com.i2i.evrencell.voltdb.UserDetails;
+import com.i2i.evrencell.voltdb.VoltCustomer;
+import com.i2i.evrencell.voltdb.VoltPackage;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
-import org.voltdb.client.Client;
-import org.voltdb.client.ClientConfig;
-import org.voltdb.client.ClientFactory;
-import org.voltdb.client.ClientResponse;
-import org.voltdb.VoltTable;
+import org.voltdb.client.ProcCallException;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException, ProcCallException {
 
         //mesaj
         double startTime = System.currentTimeMillis();
 
         VoltdbOperator voltdbOperator = new VoltdbOperator();
 
+        voltdbOperator.updateDataBalance(5679, "5537530253");
 
-        System.out.println(voltdbOperator.getLastName("5537030253"));
+        //System.out.println(voltdbOperator.getMaxCustomerId());
+
+        //System.out.println(voltdbOperator.getPackageIdByName("EVRENCELL MARS"));
+
+        //voltdbOperator.insertCustomer(68,"eno","meno","ceno","seno","zeno", new Timestamp(System.currentTimeMillis()),"neno");
+
+       /* System.out.println(voltdbOperator.getCustomerPassword("5537030253"));
+        System.out.println(voltdbOperator.getMaxBalanceId());
+
+        VoltPackage package1 = new VoltPackage();
+
+        package1 = (VoltPackage) voltdbOperator.getPackageByMsisdn("5551234567");
+        System.out.println(package1);
+
+        VoltCustomer customer1 = new VoltCustomer();
+        System.out.println(voltdbOperator.getCustomerByMsisdn("5551234567"));
+*/
 
 
         double endTime = System.currentTimeMillis();
