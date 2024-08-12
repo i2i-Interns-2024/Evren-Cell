@@ -1,6 +1,7 @@
 package com.i2i.evrencell.kafka;
 
 import com.i2i.evrencell.kafka.message.BalanceMessage;
+import com.i2i.evrencell.kafka.message.Message;
 import com.i2i.evrencell.kafka.message.NotificationMessage;
 import com.i2i.evrencell.kafka.message.UsageRecordMessage;
 import com.i2i.evrencell.kafka.seralizer.BalanceMessageSerializer;
@@ -10,30 +11,43 @@ import com.i2i.evrencell.kafka.seralizer.UsageRecordMessageSerializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
 
-public class Publisher {
+public class Publisher <T extends Message> {
 
-    public <T> Producer<String, T> createProducer(Class<? extends GenericMessageSerializer<T>> serializerClass, String topic) {
+    Producer <String, T> producer;
+
+    public <U extends T> Producer<String, U> createProducer(String className) {
         Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "159.89.229.126:9092");
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigLoader.getProperty("kafka.url"));
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializerClass.getName());
+        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, className);
 
         return new KafkaProducer<>(properties);
     }
 
-    public Producer<String, BalanceMessage> createBalanceMessageProducer() {
-        return createProducer(BalanceMessageSerializer.class, "balanceTopic");
+    public void createBalanceMessageProducer() {
+        producer = createProducer(BalanceMessageSerializer.class.getName());
     }
 
-    public Producer<String, UsageRecordMessage> createUsageRecordMessageProducer() {
-        return createProducer(UsageRecordMessageSerializer.class, "usageRecordTopic");
+    public void createUsageRecordMessageProducer() {
+        producer = createProducer(UsageRecordMessageSerializer.class.getName());
     }
 
-    public Producer<String, NotificationMessage> createNotificationMessageProducer() {
-        return createProducer(NotificationMessageSerializer.class, "notificationTopic");
+    public void createNotificationMessageProducer() {
+        producer = createProducer(NotificationMessageSerializer.class.getName());
+    }
+
+    public void send(T message, String topicName){
+        if (producer != null){
+            producer.send(new ProducerRecord<>(topicName, "operation", message));
+        }
+    }
+
+    public void close(){
+        producer.close();
     }
 }
