@@ -1,0 +1,24 @@
+
+METHOD INFOS 
+
+---- FOR CHF ----
+
+getSmsBalance(msisdn)
+getDataBalance(msisdn)
+getVoiceBalance(msisdn)
+getPackageSmsBalance(msisdn)
+getPackageDataBalance(msisdn)
+getPackageVoiceBalance(msisdn)
+getUserEmail(msisdn)
+getPackageId(msisdn)
+getName(msisdn)
+getLastName(msisdn)
+
+updateSmsBalance(amount, msisdn);
+updateVoiceBalance(amount, msisdn);
+updateDataBalance(amount, msisdn);
+
+
+
+
+---- FOR AOM ----
