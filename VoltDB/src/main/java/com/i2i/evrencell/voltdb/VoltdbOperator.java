@@ -80,12 +80,21 @@ public class VoltdbOperator {
         return handleProcedureAsInt2("GET_PACKAGE_ID_BY_PACKAGE_NAME", package_name);
     }
 
+    public int getCustomerIdByEmailAndTc(String email, String tc_no) {
+        return handleProcedureGetId("GET_CUSTOMER_ID_BY_MAIL_AND_TCNO", email, tc_no);
+    }
+
+
     public String getPackageName(String msisdn) {
         return handleProcedureAsString("GET_PACKAGE_NAME_BY_MSISDN", msisdn);
     }
 
     public String getCustomerPassword(String msisdn) {
         return handleProcedureAsString("GET_CUSTOMER_PASSWORD_BY_MSISDN", msisdn);
+    }
+
+    public boolean checkCustomerExists(String email, String tc_no) {
+        return handleProcedureCheck("CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO", email, tc_no);
     }
 
 
@@ -112,6 +121,10 @@ public class VoltdbOperator {
 
     public void updateSmsBalance(int smsUsage, String msisdn) {
         handleProcedure("UPDATE_CUSTOMER_AMOUNT_SMS_BY_MSISDN", smsUsage, msisdn);
+    }
+
+    public void updatePassword(String password, String email, String tc_no) {
+        handleProcedureChangePassword("UPDATE_CUSTOMER_PASSWORD", password, email, tc_no);
     }
 
 
@@ -270,6 +283,20 @@ public class VoltdbOperator {
         }
     }
 
+
+    private void handleProcedureChangePassword(String procedureName, String password, String email, String tc_no) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, password, email, tc_no);
+            if (response.getStatus() != ClientResponse.SUCCESS) {
+                throw new RuntimeException("Procedure call failed: " + response.getStatusString());
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+
     private void handleProcedureInsertCustomer(String procedureName, int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
         try {
             ClientResponse response = client.callProcedure(procedureName, cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
@@ -294,6 +321,39 @@ public class VoltdbOperator {
             throw new RuntimeException("Error while calling procedure: " + procedureName, e);
         }
     }
+
+    private int handleProcedureGetId(String procedureName, String email, String tc_no) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, email, tc_no);
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                return (int) resultTable.getLong(0); // Cast long to int
+            } else {
+                throw new RuntimeException("No data returned from procedure");
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+    private boolean handleProcedureCheck(String procedureName, String email, String tc_no) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, email, tc_no);
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                long result = resultTable.getLong(0); // Veriyi long olarak alıyoruz
+                return result == 1; // Sonuç 1 ise true, değilse false döndürüyoruz
+            } else {
+                return false; // Tabloda sonuç çıkmıyorsa false döndür
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+
 
 
 
