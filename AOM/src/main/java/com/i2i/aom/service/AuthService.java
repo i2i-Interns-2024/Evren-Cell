@@ -48,6 +48,7 @@ public class AuthService {
      */
     public ResponseEntity<String> registerCustomer(RegisterCustomerRequest registerCustomerRequest) throws SQLException,
             ClassNotFoundException, IOException, ProcCallException, InterruptedException {
+        System.out.println("Customer created successfully in Oracle DB1.");
 
         ResponseEntity<String> oracleResponse = customerRepository.createUserInOracle(registerCustomerRequest);
         if (!oracleResponse.getStatusCode().is2xxSuccessful()) {
@@ -70,8 +71,8 @@ public class AuthService {
      * If the password does not match, it returns an error message and a status code of 401
      * @return ResponseEntity<String>
      */
-    public ResponseEntity<String> login(LoginCustomerRequest loginCustomerRequest) throws  IOException, InterruptedException, ProcCallException {
-        String encodedPassword = customerRepository.getEncodedCustomerPasswordByMsisdnFromVolt(loginCustomerRequest.msisdn());
+    public ResponseEntity<String> login(LoginCustomerRequest loginCustomerRequest) throws SQLException, ClassNotFoundException {
+        String encodedPassword = customerRepository.getEncodedCustomerPasswordByMsisdn(loginCustomerRequest.msisdn());
         if (encodedPassword == null) {
             return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }

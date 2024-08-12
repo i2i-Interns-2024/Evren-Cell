@@ -48,6 +48,11 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
         return createHttpResponse(HttpStatus.UNAUTHORIZED, unauthorizedException.getMessage());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<HttpResponse> badRequestException(BadRequestException badRequestException){
+        return createHttpResponse(HttpStatus.BAD_REQUEST, badRequestException.getMessage());
+    }
+
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message){
         return new ResponseEntity<>(
                 new HttpResponse(httpStatus.value(),
