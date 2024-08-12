@@ -12,8 +12,18 @@ public class Main {
     public static void main(String[] args) {
 
         //mesaj
+        double startTime = System.currentTimeMillis();
+
         VoltdbOperator voltdbOperator = new VoltdbOperator();
-        System.out.println(voltdbOperator.getDataBalance("5551234567"));
+
+
+        System.out.println(voltdbOperator.getPackageSmsBalance("5551234567"));
+
+
+        double endTime = System.currentTimeMillis();
+        double elapsedTime = endTime - startTime;
+        System.out.println("Elapsed time: " + elapsedTime);
+
 
         /*ClientConfig clientConfig = new ClientConfig();
         Client client = ClientFactory.createClient(clientConfig);

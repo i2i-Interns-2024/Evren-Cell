@@ -42,39 +42,40 @@ public class VoltdbOperator {
         return client;
     }
 
+    public int getPackageDataBalance(String msisdn){
+        return handleProcedure("GET_CUSTOMER_PACKAGE_DATA_BY_MSISDN",msisdn);
+    }
+
+    public int getPackageVoiceBalance(String msisdn){
+        return handleProcedure("GET_CUSTOMER_PACKAGE_MINUTES_BY_MSISDN",msisdn);
+    }
+
+    public int getPackageSmsBalance(String msisdn){
+        return handleProcedure("GET_CUSTOMER_PACKAGE_SMS_BY_MSISDN",msisdn);
+    }
+
     public int getDataBalance(String msisdn) {
-        String procedureName = "GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN";
-        try {
-            ClientResponse response = client.callProcedure(procedureName, msisdn);
-            VoltTable resultTable = response.getResults()[0];
-            if (resultTable.advanceRow()) {
-                return (int) resultTable.getLong(0);
-            } else {
-                throw new RuntimeException("No data returned from procedure");
-            }
-        } catch (IOException | ProcCallException e) {
-            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
-        }
+        return handleProcedure("GET_CUSTOMER_REMAINING_DATA_BY_MSISDN", msisdn);
     }
 
     public int getVoiceBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_AMOUNT_VOICE_BY_MSISDN", msisdn);
+        return handleProcedure("GET_CUSTOMER_REMAINING_MINUTES_BY_MSISDN", msisdn);
     }
 
     public int getSmsBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_AMOUNT_SMS_BY_MSISDN", msisdn);
+        return handleProcedure("GET_CUSTOMER_REMAINING_SMS_BY_MSISDN", msisdn);
     }
 
-    public void updateDataBalance(String msisdn, int dataUsage) {
-        handleProcedure("UPDATE_CUSTOMER_AMOUNT_DATA_BY_MSISDN", msisdn, dataUsage);
+    public void updateDataBalance(int dataUsage, String msisdn) {
+        handleProcedure("UPDATE_CUSTOMER_AMOUNT_DATA_BY_MSISDN", dataUsage, msisdn);
     }
 
-    public void updateVoiceBalance(String msisdn, int voiceUsage) {
-        handleProcedure("UPDATE_CUSTOMER_AMOUNT_VOICE_BY_MSISDN", msisdn, voiceUsage);
+    public void updateVoiceBalance(int voiceUsage, String msisdn) {
+        handleProcedure("UPDATE_CUSTOMER_AMOUNT_MINUTES_BY_MSISDN", voiceUsage, msisdn);
     }
 
-    public void updateSmsBalance(String msisdn, int smsUsage) {
-        handleProcedure("UPDATE_CUSTOMER_AMOUNT_SMS_BY_MSISDN", msisdn, smsUsage);
+    public void updateSmsBalance(int smsUsage, String msisdn) {
+        handleProcedure("UPDATE_CUSTOMER_AMOUNT_SMS_BY_MSISDN", smsUsage, msisdn);
     }
 
 
@@ -114,9 +115,10 @@ public class VoltdbOperator {
     }
 
 
-    private void handleProcedure(String procedureName, String msisdn, int usage) {
+    private void handleProcedure(String procedureName, int usage, String msisdn) {
         try {
-            ClientResponse response = client.callProcedure(procedureName, msisdn, usage);
+            ClientResponse response = client.callProcedure(procedureName, usage, msisdn);
+            //ClientResponse response0 = client.callProcedure("GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN", "5551234567");
             if (response.getStatus() != ClientResponse.SUCCESS) {
                 throw new RuntimeException("Procedure call failed: " + response.getStatusString());
             }
@@ -137,8 +139,20 @@ public class VoltdbOperator {
         }
     }
 
-    public static void main(String[] args) {
-        VoltdbOperator voltdbOperator = new VoltdbOperator();
-        System.out.println(voltdbOperator.getDataBalance("5551234567"));
+    public String getName(String msisdn) {
+        return getUserDetails(msisdn).getName();
     }
+
+    public String getLastName(String msisdn) {
+        return getUserDetails(msisdn).getLastName();
+    }
+
+    public String getUserEmail(String msisdn) {
+        return getUserDetails(msisdn).getEmail();
+    }
+
+    public int getPackageId(String msisdn) {
+        return getUserDetails(msisdn).getPackageId();
+    }
+
 }
