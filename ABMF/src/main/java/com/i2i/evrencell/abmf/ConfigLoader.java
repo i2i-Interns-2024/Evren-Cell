@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigLoader {
-    private static Properties properties = new Properties();
+    private static final Properties properties = new Properties();
 
     static {
         try (InputStream input = ConfigLoader.class.getClassLoader().getResourceAsStream("application.properties")) {
@@ -19,7 +19,10 @@ public class ConfigLoader {
     }
 
     public static String getProperty(String key) {
+        String envValue = System.getenv(key.toUpperCase().replace(".", "_"));
+        if (envValue != null) {
+            return envValue;
+        }
         return properties.getProperty(key);
     }
 }
-
