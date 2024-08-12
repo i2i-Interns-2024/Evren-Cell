@@ -11,7 +11,7 @@ import org.voltdb.VoltTable;
 public class Main {
     public static void main(String[] args) {
 
-
+        //mesaj
         VoltdbOperator voltdbOperator = new VoltdbOperator();
         System.out.println(voltdbOperator.getDataBalance("5551234567"));
 
