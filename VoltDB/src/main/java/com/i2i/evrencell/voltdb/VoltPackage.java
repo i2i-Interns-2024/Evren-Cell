@@ -1,6 +1,8 @@
 package com.i2i.evrencell.voltdb;
 
-public class Package {
+import java.sql.Timestamp;
+
+public class VoltPackage {
     private Integer packageId;
     private String packageName;
     private double price;
@@ -9,7 +11,7 @@ public class Package {
     private Integer amountSms;
     private Integer period;
 
-    public Package(Integer packageId, String packageName, double price, Integer amountMinutes, Integer amountData, Integer amountSms, Integer period) {
+    public VoltPackage(Integer packageId, String packageName, double price, Integer amountMinutes, Integer amountData, Integer amountSms, Integer period) {
         this.packageId = packageId;
         this.packageName = packageName;
         this.price = price;
@@ -19,7 +21,8 @@ public class Package {
         this.period = period;
     }
 
-    public Package(){}
+    public VoltPackage(){}
+
 
     public Integer getPackageId() {
         return packageId;

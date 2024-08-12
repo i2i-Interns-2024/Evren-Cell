@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.voltdb.VoltTable;
 import org.voltdb.client.*;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Optional;
 
 public class VoltdbOperator {
 
@@ -43,28 +45,58 @@ public class VoltdbOperator {
     }
 
     public int getPackageDataBalance(String msisdn){
-        return handleProcedure("GET_CUSTOMER_PACKAGE_DATA_BY_MSISDN",msisdn);
+        return handleProcedureAsInt("GET_CUSTOMER_PACKAGE_DATA_BY_MSISDN",msisdn);
     }
 
     public int getPackageVoiceBalance(String msisdn){
-        return handleProcedure("GET_CUSTOMER_PACKAGE_MINUTES_BY_MSISDN",msisdn);
+        return handleProcedureAsInt("GET_CUSTOMER_PACKAGE_MINUTES_BY_MSISDN",msisdn);
     }
 
     public int getPackageSmsBalance(String msisdn){
-        return handleProcedure("GET_CUSTOMER_PACKAGE_SMS_BY_MSISDN",msisdn);
+        return handleProcedureAsInt("GET_CUSTOMER_PACKAGE_SMS_BY_MSISDN",msisdn);
     }
 
     public int getDataBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_REMAINING_DATA_BY_MSISDN", msisdn);
+        return handleProcedureAsInt("GET_CUSTOMER_REMAINING_DATA_BY_MSISDN", msisdn);
     }
 
     public int getVoiceBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_REMAINING_MINUTES_BY_MSISDN", msisdn);
+        return handleProcedureAsInt("GET_CUSTOMER_REMAINING_MINUTES_BY_MSISDN", msisdn);
     }
 
     public int getSmsBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_REMAINING_SMS_BY_MSISDN", msisdn);
+        return handleProcedureAsInt("GET_CUSTOMER_REMAINING_SMS_BY_MSISDN", msisdn);
     }
+
+    public int getMaxCustomerId() {
+        return handleProcedureAsInt("GET_MAX_CUSTOMER_ID");
+    }
+
+    public int getMaxBalanceId() {
+        return handleProcedureAsInt("GET_MAX_BALANCE_ID");
+    }
+
+    public int getPackageIdByName(String package_name) {
+        return handleProcedureAsInt2("GET_PACKAGE_ID_BY_PACKAGE_NAME", package_name);
+    }
+
+    public String getPackageName(String msisdn) {
+        return handleProcedureAsString("GET_PACKAGE_NAME_BY_MSISDN", msisdn);
+    }
+
+    public String getCustomerPassword(String msisdn) {
+        return handleProcedureAsString("GET_CUSTOMER_PASSWORD_BY_MSISDN", msisdn);
+    }
+
+
+
+    public void insertCustomer(int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
+        handleProcedureInsert("INSERT_NEW_CUSTOMER", cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
+    }
+
+
+
+
 
     public void updateDataBalance(int dataUsage, String msisdn) {
         handleProcedure("UPDATE_CUSTOMER_AMOUNT_DATA_BY_MSISDN", dataUsage, msisdn);
@@ -78,12 +110,17 @@ public class VoltdbOperator {
         handleProcedure("UPDATE_CUSTOMER_AMOUNT_SMS_BY_MSISDN", smsUsage, msisdn);
     }
 
-    public Package getPackageByMsisdn(String msisdn) {
+
+
+
+
+
+    public VoltPackage getPackageByMsisdn(String msisdn) {
         try {
             ClientResponse response = client.callProcedure("GET_PACKAGE_INFO_BY_MSISDN", msisdn);
             VoltTable responseTable = response.getResults()[0];
             if (responseTable.advanceRow()) {
-                return new Package(
+                return new VoltPackage(
                         (int) responseTable.getLong("PACKAGE_ID"),
                         responseTable.getString("PACKAGE_NAME"),
                         responseTable.getDouble("PRICE"),
@@ -100,6 +137,39 @@ public class VoltdbOperator {
             throw new RuntimeException("Error while calling procedure: GET_CUSTOMER_INFO_PACKAGE_BY_MSISDN", e);
         }
     }
+
+    public Optional<VoltCustomer> getCustomerByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
+        ClientResponse response = client.callProcedure("GET_CUSTOMER_INFO_BY_MSISDN", msisdn);
+
+        if (response.getStatus() == ClientResponse.SUCCESS) {
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                Integer customerId = (int) resultTable.getLong("CUST_ID");
+                String name = resultTable.getString("NAME");
+                String surname = resultTable.getString("SURNAME");
+                String email = resultTable.getString("EMAIL");
+                Timestamp sdate = (resultTable.getTimestampAsSqlTimestamp("SDATE"));
+                String tcNo = resultTable.getString("TC_NO");
+
+                VoltCustomer customer = VoltCustomer.builder()
+                        .customerId(customerId)
+                        .msisdn(msisdn)
+                        .email(email)
+                        .name(name)
+                        .surname(surname)
+                        .sDate(sdate)
+                        .TCNumber(tcNo)
+                        .build();
+
+                client.close();
+                return Optional.of(customer);
+            }
+        }
+        client.close();
+        throw new RuntimeException("Customer not found with this MSISDN: " + msisdn);
+    }
+
+
 
 
 
@@ -123,7 +193,22 @@ public class VoltdbOperator {
         }
     }
 
-    private int handleProcedure(String procedureName, String msisdn) {
+    private  int handleProcedureAsInt(String procedureName) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName);
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                return (int) resultTable.getLong(0); // Cast long to int
+            } else {
+                throw new RuntimeException("No data returned from procedure");
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+    private int handleProcedureAsInt(String procedureName, String msisdn) {
         try {
             ClientResponse response = client.callProcedure(procedureName, msisdn);
             VoltTable resultTable = response.getResults()[0];
@@ -138,6 +223,35 @@ public class VoltdbOperator {
         }
     }
 
+    private int handleProcedureAsInt2(String procedureName, String package_name) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, package_name);
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                return (int) resultTable.getLong(0); // Cast long to int
+            } else {
+                throw new RuntimeException("No data returned from procedure");
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+    private String handleProcedureAsString(String procedureName, String msisdn) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, msisdn);
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                return resultTable.getString(0); // Cast long to int
+            } else {
+                throw new RuntimeException("No data returned from procedure");
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
 
     private void handleProcedure(String procedureName, int usage, String msisdn) {
         try {
@@ -151,6 +265,20 @@ public class VoltdbOperator {
             throw new RuntimeException("Error while calling procedure: " + procedureName, e);
         }
     }
+
+    private void handleProcedureInsert(String procedureName, int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
+        try {
+            ClientResponse response = client.callProcedure(procedureName, cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
+            if (response.getStatus() != ClientResponse.SUCCESS) {
+                throw new RuntimeException("Procedure call failed: " + response.getStatusString());
+            }
+        } catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: " + procedureName, e);
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
+    }
+
+    
 
     public void close() {
         if (client != null) {
