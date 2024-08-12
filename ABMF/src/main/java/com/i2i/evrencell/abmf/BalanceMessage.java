@@ -1,6 +1,6 @@
-package com.i2i.evrencell.kafka.message;
+package com.i2i.evrencell.abmf;
 
-public class BalanceMessage implements Message {
+public class BalanceMessage {
 
     private String msisdn;
     private Integer minute;

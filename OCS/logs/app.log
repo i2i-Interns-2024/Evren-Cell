@@ -1,0 +1,7 @@
+2024-08-06 16:00:33 INFO  Main:12 - Hello, World!
+2024-08-06 16:01:36.601 [main] INFO  com.ikbalci.Main - Hello, World!
+2024-08-06 16:02:58 [main] INFO  com.ikbalci.Main Main:12 - Hello, World!
+2024-08-06 16:03:21 [main] INFO  com.ikbalci.Main Main:12 - Hello, World!
+2024-08-06 16:03:21 [main] ERROR com.ikbalci.Main Main:13 - This is an error message
+2024-08-06 16:03:21 [main] FATAL com.ikbalci.Main Main:14 - This is a fatal message
+2024-08-07 10:20:33 [main] INFO  com.ikbalci.Main Main:23 - Connection successful

@@ -2,7 +2,7 @@ package com.i2i.evrencell.kafka.message;
 
 import java.sql.Timestamp;
 
-public class UsageRecordMessage {
+public class UsageRecordMessage implements Message {
     private String callerMsisdn;
     private String calleeMsisdn;
     private String usageType;

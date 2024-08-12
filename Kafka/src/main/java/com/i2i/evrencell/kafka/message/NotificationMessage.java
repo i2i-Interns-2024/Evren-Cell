@@ -1,6 +1,6 @@
 package com.i2i.evrencell.kafka.message;
 
-public class NotificationMessage {
+public class NotificationMessage implements Message {
     private String msisdn;
     private String notificationType;
     private String name;
