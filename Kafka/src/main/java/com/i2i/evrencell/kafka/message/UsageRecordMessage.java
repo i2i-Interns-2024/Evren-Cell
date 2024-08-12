@@ -1,15 +1,17 @@
 package com.i2i.evrencell.kafka.message;
 
+import com.i2i.evrencell.kafka.BalanceType;
+
 import java.sql.Timestamp;
 
 public class UsageRecordMessage implements Message {
     private String callerMsisdn;
     private String calleeMsisdn;
-    private String usageType;
+    private BalanceType usageType;
     private Integer usageDuration;
     private Timestamp usageDate;
 
-    public UsageRecordMessage(String callerMsisdn, String calleeMsisdn, String usageType, Integer usageDuration, Timestamp usageDate) {
+    public UsageRecordMessage(String callerMsisdn, String calleeMsisdn, BalanceType usageType, Integer usageDuration, Timestamp usageDate) {
         this.callerMsisdn = callerMsisdn;
         this.calleeMsisdn = calleeMsisdn;
         this.usageType = usageType;
@@ -36,11 +38,11 @@ public class UsageRecordMessage implements Message {
         this.calleeMsisdn = calleeMsisdn;
     }
 
-    public String getUsageType() {
+    public BalanceType getUsageType() {
         return usageType;
     }
 
-    public void setUsageType(String usageType) {
+    public void setUsageType(BalanceType usageType) {
         this.usageType = usageType;
     }
 

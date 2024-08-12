@@ -22,7 +22,7 @@ import java.util.Properties;
 public class Subscriber <T extends Message>{
     Consumer<String, T> consumer;
 
-    public <U extends T> Consumer<String, U> createConsumer(String className, String topic, String consumerGroup) {
+    public <U extends T> Consumer<String, U> createConsumer(String className, String topicName, String consumerGroup) {
         Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigLoader.getProperty("kafka.url"));
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
@@ -30,21 +30,21 @@ public class Subscriber <T extends Message>{
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, className);
 
         Consumer<String, U> consumer = new KafkaConsumer<>(properties);
-        consumer.subscribe(Collections.singletonList(topic));
+        consumer.subscribe(Collections.singletonList(topicName));
 
         return consumer;
     }
 
     public void createBalanceMessageConsumer() {
-        consumer = createConsumer(BalanceMessageDeserializer.class.getName(), "balanceTopic", "balanceConsumerGroup");
+        consumer = createConsumer(BalanceMessageDeserializer.class.getName(), KafkaTopicConstants.BALANCE_TOPIC, "balanceConsumerGroup");
     }
 
     public void  createUsageRecordMessageConsumer() {
-        consumer = createConsumer(UsageRecordMessageDeserializer.class.getName(), "usageRecordTopic", "usageRecordConsumerGroup");
+        consumer = createConsumer(UsageRecordMessageDeserializer.class.getName(), KafkaTopicConstants.USAGE_RECORD_TOPIC, "usageRecordConsumerGroup");
     }
 
     public void createNotificationMessageConsumer() {
-        consumer = createConsumer(NotificationMessageDeserializer.class.getName(), "notificationTopic", "notificationConsumerGroup");
+        consumer = createConsumer(NotificationMessageDeserializer.class.getName(), KafkaTopicConstants.NOTIFICATION_TOPIC, "notificationConsumerGroup");
     }
 
     public ConsumerRecords<String, T> poll(){

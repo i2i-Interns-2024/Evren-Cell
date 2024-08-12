@@ -46,4 +46,8 @@ public class Publisher <T extends Message> {
             producer.send(new ProducerRecord<>(topicName, "operation", message));
         }
     }
+
+    public void close(){
+        producer.close();
+    }
 }

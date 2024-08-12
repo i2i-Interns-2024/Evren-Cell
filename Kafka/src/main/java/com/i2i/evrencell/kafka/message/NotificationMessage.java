@@ -1,60 +1,52 @@
 package com.i2i.evrencell.kafka.message;
 
+import com.i2i.evrencell.kafka.BalanceType;
+
 public class NotificationMessage implements Message {
-    private String msisdn;
-    private String notificationType;
-    private String name;
-    private String surname;
-    private String notificationText;
 
-    public NotificationMessage(String msisdn, String notificationType, String name, String surname, String notificationText) {
-        this.msisdn = msisdn;
-        this.notificationType = notificationType;
+    private final String name;
+    private final String lastname;
+    private final String msisdn;
+    private final String email;
+    private final BalanceType type;
+    private final Integer amount;
+    private final String threshold;
+
+    public NotificationMessage(String name, String lastname, String msisdn, String email, BalanceType type, Integer amount, String threshold) {
         this.name = name;
-        this.surname = surname;
-        this.notificationText = notificationText;
-    }
-
-    public NotificationMessage() {
-    }
-
-    public String getMsisdn() {
-        return msisdn;
-    }
-
-    public void setMsisdn(String msisdn) {
+        this.lastname = lastname;
         this.msisdn = msisdn;
-    }
-
-    public String getNotificationType() {
-        return notificationType;
-    }
-
-    public void setNotificationType(String notificationType) {
-        this.notificationType = notificationType;
+        this.email = email;
+        this.type = type;
+        this.amount = amount;
+        this.threshold = threshold;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getLastname() {
+        return lastname;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getMsisdn() {
+        return msisdn;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public String getEmail() {
+        return email;
     }
 
-    public String getNotificationText() {
-        return notificationText;
+    public BalanceType getType() {
+        return type;
     }
 
-    public void setNotificationText(String notificationText) {
-        this.notificationText = notificationText;
+    public Integer getAmount() {
+        return amount;
+    }
+
+    public String getThreshold() {
+        return threshold;
     }
 }

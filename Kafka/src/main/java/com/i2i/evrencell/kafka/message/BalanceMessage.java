@@ -1,17 +1,17 @@
 package com.i2i.evrencell.kafka.message;
 
+import com.i2i.evrencell.kafka.BalanceType;
+
 public class BalanceMessage implements Message {
 
     private String msisdn;
-    private Integer minute;
-    private Integer data;
-    private Integer sms;
+    private Integer amount;
+    private BalanceType type;
 
-    public BalanceMessage(String msisdn, Integer minute, Integer data, Integer sms) {
+    public BalanceMessage(String msisdn, BalanceType type, Integer amount) {
         this.msisdn = msisdn;
-        this.minute = minute;
-        this.data = data;
-        this.sms = sms;
+        this.amount = amount;
+        this.type = type;
     }
 
     public BalanceMessage() {
@@ -25,27 +25,19 @@ public class BalanceMessage implements Message {
         this.msisdn = msisdn;
     }
 
-    public Integer getMinute() {
-        return minute;
+    public Integer getAmount() {
+        return amount;
     }
 
-    public void setMinute(Integer minute) {
-        this.minute = minute;
+    public void setAmount(Integer amount) {
+        this.amount = amount;
     }
 
-    public Integer getData() {
-        return data;
+    public BalanceType getType() {
+        return type;
     }
 
-    public void setData(Integer data) {
-        this.data = data;
-    }
-
-    public Integer getSms() {
-        return sms;
-    }
-
-    public void setSms(Integer sms) {
-        this.sms = sms;
+    public void setType(BalanceType type) {
+        this.type = type;
     }
 }
