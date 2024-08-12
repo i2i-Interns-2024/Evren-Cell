@@ -17,13 +17,15 @@ public class Main {
 
         VoltdbOperator voltdbOperator = new VoltdbOperator();
 
-        voltdbOperator.updateDataBalance(5679, "5537530253");
+       // voltdbOperator.updateDataBalance(5679, "5537530253");
 
         //System.out.println(voltdbOperator.getMaxCustomerId());
 
         //System.out.println(voltdbOperator.getPackageIdByName("EVRENCELL MARS"));
 
-        //voltdbOperator.insertCustomer(68,"eno","meno","ceno","seno","zeno", new Timestamp(System.currentTimeMillis()),"neno");
+        //voltdbOperator.insertCustomer(72,"eno","meno","cenno","senno","zenno", new Timestamp(System.currentTimeMillis()),"nenno");
+
+        voltdbOperator.insertBalance(58,3,72,55555,5555,5555555,new Timestamp(System.currentTimeMillis()),new Timestamp(System.currentTimeMillis()));
 
        /* System.out.println(voltdbOperator.getCustomerPassword("5537030253"));
         System.out.println(voltdbOperator.getMaxBalanceId());
