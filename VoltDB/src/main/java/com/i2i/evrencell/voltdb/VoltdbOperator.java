@@ -78,6 +78,30 @@ public class VoltdbOperator {
         handleProcedure("UPDATE_CUSTOMER_AMOUNT_SMS_BY_MSISDN", smsUsage, msisdn);
     }
 
+    public Package getPackageByMsisdn(String msisdn) {
+        try {
+            ClientResponse response = client.callProcedure("GET_PACKAGE_INFO_BY_MSISDN", msisdn);
+            VoltTable responseTable = response.getResults()[0];
+            if (responseTable.advanceRow()) {
+                return new Package(
+                        (int) responseTable.getLong("PACKAGE_ID"),
+                        responseTable.getString("PACKAGE_NAME"),
+                        responseTable.getDouble("PRICE"),
+                        (int) responseTable.getLong("AMOUNT_MINUTES"),
+                        (int) responseTable.getLong("AMOUNT_DATA"),
+                        (int) responseTable.getLong("AMOUNT_SMS"),
+                        (int) responseTable.getLong("PERIOD")
+                );
+            } else {
+                throw new RuntimeException("Error while getting package by Msisdn");
+            }
+        }catch (IOException | ProcCallException e) {
+            logger.error("Error while calling procedure: GET_CUSTOMER_INFO_PACKAGE_BY_MSISDN", e);
+            throw new RuntimeException("Error while calling procedure: GET_CUSTOMER_INFO_PACKAGE_BY_MSISDN", e);
+        }
+    }
+
+
 
     public UserDetails getUserDetails(String msisdn) {
         try {

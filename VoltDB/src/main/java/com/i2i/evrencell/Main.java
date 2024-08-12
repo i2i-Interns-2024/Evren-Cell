@@ -17,7 +17,7 @@ public class Main {
         VoltdbOperator voltdbOperator = new VoltdbOperator();
 
 
-        System.out.println(voltdbOperator.getPackageSmsBalance("5551234567"));
+        System.out.println(voltdbOperator.getLastName("5537030253"));
 
 
         double endTime = System.currentTimeMillis();
