@@ -45,7 +45,18 @@ public class VoltdbOperator {
     }
 
     public int getDataBalance(String msisdn) {
-        return handleProcedure("GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN", msisdn);
+        String procedureName = "GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN";
+        try {
+            ClientResponse response = client.callProcedure(procedureName, msisdn);
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                return (int) resultTable.getLong(0);
+            } else {
+                throw new RuntimeException("No data returned from procedure");
+            }
+        } catch (IOException | ProcCallException e) {
+            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+        }
     }
 
     public int getVoiceBalance(String msisdn) {
@@ -128,8 +139,31 @@ public class VoltdbOperator {
         }
     }
 
+    // TODO get voice bozuk
+    // update data bozuk
+    // update sms bozuk
+
+
     public static void main(String[] args) {
         VoltdbOperator voltdbOperator = new VoltdbOperator();
-        System.out.println(voltdbOperator.getDataBalance("5551234567"));
+        int getBalance = voltdbOperator.getDataBalance("5551234567");
+        System.out.println("data balance: " + getBalance);
+        /*int getVoice = voltdbOperator.getVoiceBalance("5551234567");
+        System.out.println("voice: "+ getVoice);*/
+        voltdbOperator.updateDataBalance("5551234567", 100);
+        int getSms = voltdbOperator.getSmsBalance("5551234567");
+        System.out.println("sms: "+ getSms);
+
+        /*voltdbOperator.updateDataBalance("5551234567", 222);
+        System.out.println("data balance updated");*/
+
+
+        /*voltdbOperator.updateVoiceBalance("5551234567", 333);
+        System.out.println("voice balance updated");*/
+
+
+        voltdbOperator.updateSmsBalance("5551234567", 444);
+        System.out.println("sms balance updated");
+
     }
 }

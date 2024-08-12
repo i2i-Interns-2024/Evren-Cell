@@ -8,6 +8,9 @@ import com.i2i.evrencell.packages.PackageDetails;
 import com.i2i.evrencell.packages.PackageDetailsReader;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
 import com.i2i.evrencell.packages.UserDetails;
+import org.sk.i2i.evren.DataTransaction;
+import org.sk.i2i.evren.SmsTransaction;
+import org.sk.i2i.evren.VoiceTransaction;
 
 public class BalanceCalculator {
 
@@ -21,17 +24,17 @@ public class BalanceCalculator {
         this.kafkaOperator = kafkaOperator;
     }
 
-    public void calculateDataRequest(DataMessage dataMessage) {
+    public void calculateDataRequest(DataTransaction dataMessage) {
         int dataUsage = dataMessage.getDataUsage();
         processRequest("data", dataMessage.getMsisdn(), dataUsage, this::getUserDataBalance);
     }
 
-    public void calculateVoiceRequest(VoiceMessage voiceMessage) {
+    public void calculateVoiceRequest(VoiceTransaction voiceMessage) {
         int duration = voiceMessage.getDuration();
         processRequest("voice", voiceMessage.getCallerMsisdn(), duration, this::getUserVoiceBalance);
     }
 
-    public void calculateSmsRequest(SmsMessage smsMessage) {
+    public void calculateSmsRequest(SmsTransaction smsMessage) {
         int smsCount = 1;
         processRequest("sms", smsMessage.getSenderMsisdn(), smsCount, this::getUserSmsBalance);
     }

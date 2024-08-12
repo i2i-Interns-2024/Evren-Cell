@@ -37,7 +37,7 @@ public class KafkaOperator {
 
     private Properties loadKafkaProperties() {
         Properties properties = new Properties();
-        String configFilePath = "C:\\Users\\ikena\\Desktop\\CHF\\src\\main\\resources\\kafka.conf";
+        String configFilePath = "CHF/src/main/resources/kafka.conf";
         try (InputStream input = new FileInputStream(configFilePath)) {
             properties.load(input);
         } catch (Exception e) {
@@ -85,10 +85,6 @@ public class KafkaOperator {
         PackageDetailsReader packageDetailsReader = new PackageDetailsReader();
         VoltdbOperator voltdbOperator = new VoltdbOperator();
         KafkaOperator kafkaOperator = new KafkaOperator(packageDetailsReader, voltdbOperator);
-
-        System.out.println(packageDetailsReader.getPackageDetailsById(voltdbOperator.getUserDetails("5551234567").getPackageId()).getVoiceAmount());
-        kafkaOperator.sendKafkaUpdatedBalance("voice", "5551234567", 100);
-        System.out.println("Sent updated balance message");
 
         kafkaOperator.sendKafkaUsageThresholdMessage("data", "5551234567", "80%");
         System.out.println("Sent usage threshold message");

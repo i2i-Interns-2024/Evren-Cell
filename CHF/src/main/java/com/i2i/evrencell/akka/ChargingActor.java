@@ -6,6 +6,9 @@ import com.i2i.evrencell.messages.DataMessage;
 import com.i2i.evrencell.messages.SmsMessage;
 import com.i2i.evrencell.messages.VoiceMessage;
 
+import org.sk.i2i.evren.*;
+
+
 public class ChargingActor extends AbstractActor {
 
     private final BalanceCalculator balanceCalculator;
@@ -17,22 +20,27 @@ public class ChargingActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(DataMessage.class, this::handleDataMessage)
-                .match(SmsMessage.class, this::handleSmsMessage)
-                .match(VoiceMessage.class, this::handleVoiceMessage)
+                .match(DataTransaction.class, this::handleDataMessage)
+                .match(SmsTransaction.class, this::handleSmsMessage)
+                .match(VoiceTransaction.class, this::handleVoiceMessage)
                 .matchAny(message -> System.out.println("Received unknown message: " + message))
                 .build();
     }
 
-    private void handleDataMessage(DataMessage dataMessage) {
+    private void handleDataMessage(DataTransaction dataMessage) {
+        System.out.println("Received data message");
         balanceCalculator.calculateDataRequest(dataMessage);
     }
 
-    private void handleSmsMessage(SmsMessage smsMessage) {
+    private void handleSmsMessage(SmsTransaction smsMessage) {
+        System.out.println("Received sms message");
+
         balanceCalculator.calculateSmsRequest(smsMessage);
     }
 
-    private void handleVoiceMessage(VoiceMessage voiceMessage) {
+    private void handleVoiceMessage(VoiceTransaction voiceMessage) {
+        System.out.println("Received voice message");
+
         balanceCalculator.calculateVoiceRequest(voiceMessage);
     }
 }
