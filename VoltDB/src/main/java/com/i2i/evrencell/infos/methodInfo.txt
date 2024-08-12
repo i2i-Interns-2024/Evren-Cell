@@ -22,3 +22,11 @@ updateDataBalance(amount, msisdn);
 
 
 ---- FOR AOM ----
+
+getPackageName(msisdn)
+-
+-
+-
+-
+
+
