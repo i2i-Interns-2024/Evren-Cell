@@ -9,6 +9,7 @@ import com.i2i.aom.model.Customer;
 import com.i2i.aom.request.CreateBalanceRequest;
 import com.i2i.aom.request.RegisterCustomerRequest;
 import oracle.jdbc.OracleTypes;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -36,6 +37,7 @@ import java.util.logging.Logger;
  */
 @Repository
 public class CustomerRepository {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CustomerRepository.class);
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
     private final BalanceRepository balanceRepository;
@@ -114,6 +116,7 @@ public class CustomerRepository {
         if (customerExists(registerCustomerRequest.msisdn(), registerCustomerRequest.email(), registerCustomerRequest.TCNumber())) {
             return new ResponseEntity<>("This customer already exists in Oracle DB.", HttpStatus.CONFLICT);
         }
+        System.out.println("Customer created successfully in Oracle DB1.");
 
         Connection connection = oracleConnection.getOracleConnection();
 
@@ -133,6 +136,7 @@ public class CustomerRepository {
         logger.info("Retrieved package id: " + packageId);
 
         String encodedPassword = customerPasswordEncoder.encrypt(registerCustomerRequest.password());
+        logger.info("Customer created successfully in Oracle DB2.");
 
         CallableStatement customerStmt = connection.prepareCall("{call INSERT_CUSTOMER(?, ?, ?, ?, ?, ?, ?)}");
         customerStmt.setString(1, registerCustomerRequest.name());
@@ -145,6 +149,7 @@ public class CustomerRepository {
         customerStmt.execute();
         customerStmt.close();
 
+        logger.info("Customer created successfully in Oracle DB.");
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(OracleQueries.SELECT_CUSTOMER_ID);
         int customerId = 0;
@@ -179,6 +184,8 @@ public class CustomerRepository {
     * @throws ClassNotFoundException
      */
     private boolean customerExists(String msisdn, String email, String tcNo) throws SQLException, ClassNotFoundException {
+        System.out.println("customer exists.");
+
         Connection connection = oracleConnection.getOracleConnection();
         PreparedStatement stmt = connection.prepareStatement(OracleQueries.IS_CUSTOMER_ALREADY_EXISTS);
         stmt.setString(1, msisdn);
@@ -192,6 +199,8 @@ public class CustomerRepository {
         rs.close();
         stmt.close();
         connection.close();
+        System.out.println("customer exists.2");
+
         return exists;
     }
 
@@ -462,16 +471,17 @@ public class CustomerRepository {
         oracleCallableStatement.close();
         connection.close();
         boolean ifCustomerExistsInOracle = oracleStatementReturnCount > 0;
+        return ifCustomerExistsInOracle;
 
         // Check if the customer exists in VoltDB
-        Client voltClient = voltDBConnection.getClient();
-        ClientResponse voltResponse = voltClient.callProcedure("CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO", email, tcNumber);
-        VoltTable voltTable = voltResponse.getResults()[0];
-        boolean ifCustomerExistsInVolt = false;
-        if(voltTable.advanceRow()){
-            ifCustomerExistsInVolt = voltTable.getLong(0) > 0;
-        }
-        voltClient.close();
-        return ifCustomerExistsInOracle && ifCustomerExistsInVolt;
+//        Client voltClient = voltDBConnection.getClient();
+//        ClientResponse voltResponse = voltClient.callProcedure("CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO", email, tcNumber);
+//        VoltTable voltTable = voltResponse.getResults()[0];
+//        boolean ifCustomerExistsInVolt = false;
+//        if(voltTable.advanceRow()){
+//            ifCustomerExistsInVolt = voltTable.getLong(0) > 0;
+//        }
+//        voltClient.close();
+//        return ifCustomerExistsInOracle && ifCustomerExistsInVolt;
     }
 }

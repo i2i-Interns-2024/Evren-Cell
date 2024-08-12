@@ -27,8 +27,13 @@ public class ForgetPasswordController {
         this.forgetPasswordService = forgetPasswordService;
     }
 
+//    @PostMapping("/reset")
+//    public ResponseEntity<ResponseEntity<String>> resetPassword(@RequestBody ForgetPasswordRequest forgetPasswordRequest) throws SQLException, IOException, ClassNotFoundException, InterruptedException, ProcCallException, MessagingException {
+//        return ResponseEntity.ok(forgetPasswordService.forgetPassword(forgetPasswordRequest));
+//    }
+
     @PostMapping("/reset")
-    public ResponseEntity<String> resetPassword(@RequestBody ForgetPasswordRequest forgetPasswordRequest) throws SQLException, IOException, ClassNotFoundException, InterruptedException, ProcCallException, MessagingException {
+    public ResponseEntity<ResponseEntity<String>> resetPassword(@RequestBody ForgetPasswordRequest forgetPasswordRequest) throws SQLException, IOException, ClassNotFoundException, InterruptedException, ProcCallException, MessagingException {
         return ResponseEntity.ok(forgetPasswordService.forgetPassword(forgetPasswordRequest));
     }
 }

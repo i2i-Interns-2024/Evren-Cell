@@ -27,13 +27,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest)
+    public ResponseEntity<ResponseEntity<String>> registerCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest)
             throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
-        return authService.registerCustomer(registerCustomerRequest);
+        return ResponseEntity.ok(authService.registerCustomer(registerCustomerRequest));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseEntity<String>> login(@RequestBody LoginCustomerRequest loginCustomerRequest) throws IOException, InterruptedException, ProcCallException {
+    public ResponseEntity<ResponseEntity<String>> login(@RequestBody LoginCustomerRequest loginCustomerRequest) throws SQLException, ClassNotFoundException {
         return ResponseEntity.ok(authService.login(loginCustomerRequest));
     }
 }
