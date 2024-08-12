@@ -1,6 +1,7 @@
 package com.i2i.aom.repository;
 
 import com.i2i.aom.dto.PackageDetails;
+import com.i2i.aom.exception.NotFoundException;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.model.Package;
@@ -12,7 +13,11 @@ import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,39 +32,15 @@ public class PackageRepository {
         this.voltDBConnection = voltDBConnection;
     }
 
-//    public List<Package> getAllPackages() throws SQLException, ClassNotFoundException {
-//        Connection connection = oracleConnection.getOracleConnection();
-//        System.out.println(connection);
-//        Statement statement = connection.createStatement();
-//        ResultSet resultSet = statement.executeQuery(OracleQueries.SELECT_ALL_PACKAGES);
-//        List<Package> packageList = new ArrayList<>();
-//        while (resultSet.next()) {
-//            Integer packageId = resultSet.getInt("PACKAGE_ID");
-//            String packageName = resultSet.getString("PACKAGE_NAME");
-//            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
-//            Integer amountData = resultSet.getInt("AMOUNT_DATA");
-//            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
-//            double price = resultSet.getDouble("PRICE");
-//            Integer period = resultSet.getInt("PERIOD");
-//
-//            Package packageModel = Package.builder()
-//                    .packageId(packageId)
-//                    .packageName(packageName)
-//                    .amountMinutes(amountMinutes)
-//                    .amountData(amountData)
-//                    .price(price)
-//                    .amountSms(amountSms)
-//                    .period(period)
-//                    .build();
-//            packageList.add(packageModel);
-//        }
-//
-//        connection.close();
-//        return packageList;
-//
-//    }
 
-
+    /**
+     * Get all packages
+     * This method gets all packages from OracleDB with the help of stored procedure
+     *
+     * @return List<Package>
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
     public List<Package> getAllPackages() throws SQLException, ClassNotFoundException {
         Connection connection = oracleConnection.getOracleConnection();
         CallableStatement callableStatement = connection.prepareCall("{call SELECT_ALL_PACKAGES(?)}");
@@ -95,14 +76,21 @@ public class PackageRepository {
         return packageList;
     }
 
-    public List<Package> getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
+    /**
+     * Get user package by MSISDN
+     * This method gets user package by msisdn from voltDb with the help of stored procedure.
+     *
+     * @param msisdn
+     * @return Package
+     * @throws IOException
+     * @throws ProcCallException
+     */
+    public Package getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
         Client client = voltDBConnection.getClient();
-        ClientResponse clientResponse = client.callProcedure("GetPackageByMsisdn", msisdn);
+        ClientResponse clientResponse = client.callProcedure("GET_PACKAGE_INFO_BY_MSISDN", msisdn);
         VoltTable tablePackageInfo = clientResponse.getResults()[0];
 
-        List<Package> packageInfo = new ArrayList<>();
-
-        while (tablePackageInfo.advanceRow()) {
+        if (tablePackageInfo.advanceRow()) {
             Integer packageId = (int) tablePackageInfo.getLong("PACKAGE_ID");
             String packageName = tablePackageInfo.getString("PACKAGE_NAME");
             double price = tablePackageInfo.getDouble("PRICE");
@@ -111,7 +99,7 @@ public class PackageRepository {
             Integer amountSms = (int) tablePackageInfo.getLong("AMOUNT_SMS");
             Integer period = (int) tablePackageInfo.getLong("PERIOD");
 
-            Package packageModel = Package.builder()
+            return Package.builder()
                     .packageId(packageId)
                     .packageName(packageName)
                     .price(price)
@@ -120,39 +108,20 @@ public class PackageRepository {
                     .amountSms(amountSms)
                     .period(period)
                     .build();
-
-            packageInfo.add(packageModel);
         }
 
-        return packageInfo;
+        throw new NotFoundException("No package found for the given msisdn");
     }
 
-
-//    public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
-//        Connection connection = oracleConnection.getOracleConnection();
-//        PreparedStatement preparedStatement = connection.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS_NAME);
-//        preparedStatement.setString(1, packageName);
-//        ResultSet resultSet = preparedStatement.executeQuery();
-//
-//        if (resultSet.next()) {
-//            Integer amountMinutes = resultSet.getInt("AMOUNT_MINUTES");
-//            Integer amountSms = resultSet.getInt("AMOUNT_SMS");
-//            Integer amountData = resultSet.getInt("AMOUNT_DATA");
-//
-//            connection.close();
-//            return Optional.of(PackageDetails.builder()
-//                    .packageName(packageName)
-//                    .amountMinutes(amountMinutes)
-//                    .amountSms(amountSms)
-//                    .amountData(amountData)
-//                    .build());
-//        } else {
-//            connection.close();
-//            return Optional.empty();
-//        }
-//    }
-
-
+    /**
+     * Get package details by package name
+     * This method gets package details by package name from oracle with the help of stored procedure
+     *
+     * @param packageName
+     * @return Optional<PackageDetails>
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
     public Optional<PackageDetails> getPackageDetails(String packageName) throws SQLException, ClassNotFoundException {
         Connection connection = oracleConnection.getOracleConnection();
         CallableStatement callableStatement = connection.prepareCall("{call SELECT_PACKAGE_DETAILS_NAME(?, ?, ?, ?)}");
@@ -169,15 +138,15 @@ public class PackageRepository {
         callableStatement.close();
         connection.close();
 
-        if (amountMinutes != 0 || amountSms != 0 || amountData != 0) {
-            return Optional.of(PackageDetails.builder()
-                    .packageName(packageName)
-                    .amountMinutes(amountMinutes)
-                    .amountSms(amountSms)
-                    .amountData(amountData)
-                    .build());
-        } else {
-            return Optional.empty();
+        if (amountMinutes == 0 && amountSms == 0 && amountData == 0) {
+            throw new NotFoundException("Package details not found for package: " + packageName);
         }
+
+        return Optional.of(PackageDetails.builder()
+                .packageName(packageName)
+                .amountMinutes(amountMinutes)
+                .amountSms(amountSms)
+                .amountData(amountData)
+                .build());
     }
 }

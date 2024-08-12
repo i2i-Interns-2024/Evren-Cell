@@ -10,12 +10,20 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceConfiguration {
 
+    /**
+     * DataSource configuration for Oracle
+     * @return DataSource
+     */
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource.oracle")
     public DataSource oracleDataSource() {
         return new HikariDataSource();
     }
 
+    /**
+     * DataSource configuration for VoltDB
+     * @return DataSource
+     */
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource.voltdb")
     public DataSource voltdbDataSource() {

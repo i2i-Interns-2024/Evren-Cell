@@ -34,12 +34,10 @@ public class PackageService {
         }
     }
 
-    public List<PackageDto> getUserPackageByMsisdn(String msisdn){
+    public PackageDto getUserPackageByMsisdn(String msisdn){
         try {
-            List<Package> packages = packageRepository.getUserPackageByMsisdn(msisdn);
-            return packages.stream()
-                    .map(packageMapper::packageToPackageDto)
-                    .toList();
+            Package packageModel = packageRepository.getUserPackageByMsisdn(msisdn);
+            return packageMapper.packageToPackageDto(packageModel);
 
         }catch (IOException | ProcCallException exception){
             throw new RuntimeException("Error retrieving user package by msisdn ", exception);

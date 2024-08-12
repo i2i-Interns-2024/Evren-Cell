@@ -1,7 +1,7 @@
 package com.i2i.aom.repository;
 
-import com.i2i.aom.constant.OracleQueries;
 import com.i2i.aom.dto.CustomerBalance;
+import com.i2i.aom.exception.NotFoundException;
 import com.i2i.aom.helper.OracleConnection;
 import com.i2i.aom.helper.VoltDBConnection;
 import com.i2i.aom.request.CreateBalanceRequest;
@@ -14,7 +14,11 @@ import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 
 @Repository
 public class BalanceRepository {
@@ -27,73 +31,42 @@ public class BalanceRepository {
         this.voltDBConnection = voltDBConnection;
     }
 
-    //oracle
-//    public ResponseEntity createOracleBalance(CreateBalanceRequest createBalanceRequest) throws ClassNotFoundException, SQLException {
-//        Connection conn = oracleConnection.getOracleConnection();
-//
-//        // Retrieve package details
-//        PreparedStatement packageStatement = conn.prepareStatement(OracleQueries.SELECT_PACKAGE_DETAILS_ID);
-//        packageStatement.setLong(1, createBalanceRequest.packageId());
-//        ResultSet packageResultSet = packageStatement.executeQuery();
-//
-//        if (!packageResultSet.next()) {
-//            packageStatement.close();
-//            conn.close();
-//            return new ResponseEntity<>("Package not found", HttpStatus.NOT_FOUND);
-//        }
-//
-//        int amountMinutes = packageResultSet.getInt("AMOUNT_MINUTES");
-//        int amountSms = packageResultSet.getInt("AMOUNT_SMS");
-//        int amountData = packageResultSet.getInt("AMOUNT_DATA");
-//        int period = packageResultSet.getInt("PERIOD");
-//
-//        packageStatement.close();
-//
-//        Timestamp sdate = new Timestamp(System.currentTimeMillis());
-//        Timestamp edate = new Timestamp(sdate.getTime() + period * 24L * 60L * 60L * 1000L);
-//
-//        PreparedStatement balanceStmt = conn.prepareStatement(OracleQueries.INSERT_BALANCE_TO_CUSTOMER);
-//        balanceStmt.setInt(1, createBalanceRequest.customerId());
-//        balanceStmt.setInt(2, createBalanceRequest.packageId());
-//        balanceStmt.setInt(3, amountMinutes);
-//        balanceStmt.setInt(4, amountSms);
-//        balanceStmt.setInt(5, amountData);
-//        balanceStmt.setTimestamp(6, sdate);
-//        balanceStmt.setTimestamp(7, edate);
-//
-//        balanceStmt.executeUpdate();
-//        balanceStmt.close();
-//        conn.close();
-//
-//        return new ResponseEntity<>("Balance created successfully", HttpStatus.CREATED);
-//    }
+    /**
+     * Create balance for customer
+     * This method creates balance for customer in oracleDb
+     * It first gets the package details from oracleDb
+     * Then creates balance for customer with his package subscription
+     * @param createBalanceRequest
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     */
+    public ResponseEntity<String> createOracleBalance(CreateBalanceRequest createBalanceRequest) throws ClassNotFoundException, SQLException {
+        Connection connection = oracleConnection.getOracleConnection();
 
-    public ResponseEntity createOracleBalance(CreateBalanceRequest createBalanceRequest) throws ClassNotFoundException, SQLException {
-        Connection conn = oracleConnection.getOracleConnection();
+        CallableStatement packageCallableStatement = connection.prepareCall("{call SELECT_PACKAGE_DETAILS_ID(?, ?, ?, ?, ?)}");
+        packageCallableStatement.setInt(1, createBalanceRequest.packageId());
+        packageCallableStatement.registerOutParameter(2, Types.INTEGER);
+        packageCallableStatement.registerOutParameter(3, Types.INTEGER);
+        packageCallableStatement.registerOutParameter(4, Types.INTEGER);
+        packageCallableStatement.registerOutParameter(5, Types.INTEGER);
+        packageCallableStatement.execute();
 
-        CallableStatement packageStmt = conn.prepareCall("{call SELECT_PACKAGE_DETAILS_ID(?, ?, ?, ?, ?)}");
-        packageStmt.setInt(1, createBalanceRequest.packageId());
-        packageStmt.registerOutParameter(2, Types.INTEGER);
-        packageStmt.registerOutParameter(3, Types.INTEGER);
-        packageStmt.registerOutParameter(4, Types.INTEGER);
-        packageStmt.registerOutParameter(5, Types.INTEGER);
-        packageStmt.execute();
-
-        int amountMinutes = packageStmt.getInt(2);
-        int amountSms = packageStmt.getInt(3);
-        int amountData = packageStmt.getInt(4);
-        int period = packageStmt.getInt(5);
-        packageStmt.close();
+        int amountMinutes = packageCallableStatement.getInt(2);
+        int amountSms = packageCallableStatement.getInt(3);
+        int amountData = packageCallableStatement.getInt(4);
+        int period = packageCallableStatement.getInt(5);
+        packageCallableStatement.close();
 
         if (amountMinutes == 0 && amountSms == 0 && amountData == 0 && period == 0) {
-            conn.close();
-            return new ResponseEntity<>("Package not found", HttpStatus.NOT_FOUND);
+            connection.close();
+            throw new NotFoundException("Package not found in oracleDb");
         }
 
         Timestamp sdate = new Timestamp(System.currentTimeMillis());
         Timestamp edate = new Timestamp(sdate.getTime() + period * 24L * 60L * 60L * 1000L);
 
-        CallableStatement balanceStmt = conn.prepareCall("{call INSERT_BALANCE_TO_CUSTOMER(?, ?, ?, ?, ?, ?, ?)}");
+        CallableStatement balanceStmt = connection.prepareCall("{call INSERT_BALANCE_TO_CUSTOMER(?, ?, ?, ?, ?, ?, ?)}");
         balanceStmt.setInt(1, createBalanceRequest.customerId());
         balanceStmt.setInt(2, createBalanceRequest.packageId());
         balanceStmt.setInt(3, amountMinutes);
@@ -102,26 +75,36 @@ public class BalanceRepository {
         balanceStmt.setTimestamp(6, sdate);
         balanceStmt.setTimestamp(7, edate);
         balanceStmt.execute();
+
         balanceStmt.close();
 
-        conn.close();
+        connection.close();
 
         return new ResponseEntity<>("Balance created successfully", HttpStatus.CREATED);
     }
 
 
-    //voltdb
-    public ResponseEntity createVoltBalance(CreateBalanceRequest createBalanceRequest) throws IOException, ProcCallException {
+    //==VOLTDB==
+
+    /**
+     * Create balance for customer
+     * This method creates balance for customer in voltDb
+     * It first gets the package details from voltDb with using packageId
+     * Then creates balance for customer with his package subscription
+     * @param createBalanceRequest
+     * @return
+     * @throws IOException
+     * @throws ProcCallException
+     */
+    public ResponseEntity<String> createVoltBalance(CreateBalanceRequest createBalanceRequest) throws IOException, ProcCallException {
         Client client = voltDBConnection.getClient();
 
 
-//        ClientResponse packageResponse = client.callProcedure("GetPackageById", createBalanceRequest.packageId());
         ClientResponse packageResponse = client.callProcedure("GET_PACKAGE_INFO_BY_PACKAGE_ID", createBalanceRequest.packageId());
-        System.out.println(packageResponse.getResults()[0]);
         VoltTable packageTable = packageResponse.getResults()[0];
 
         if (!packageTable.advanceRow()) {
-            return new ResponseEntity<>("Package not found in voltDb", HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Package not found in voltDb");
         }
 
         int amountMinutes = (int) packageTable.getLong("AMOUNT_MINUTES");
@@ -132,7 +115,6 @@ public class BalanceRepository {
         Timestamp sdate = new Timestamp(System.currentTimeMillis());
         Timestamp edate = new Timestamp(sdate.getTime() + period * 24L * 60L * 60L * 1000L);
 
-//        ClientResponse maxIdResponse = client.callProcedure("GetMaxBalanceId");
         ClientResponse maxIdResponse = client.callProcedure("GET_MAX_BALANCE_ID");
         VoltTable maxIdTable = maxIdResponse.getResults()[0];
         int maxBalanceId = 0;
@@ -141,7 +123,6 @@ public class BalanceRepository {
         }
         int balanceId = maxBalanceId + 1;
 
-//        client.callProcedure("InsertBalanceToCustomer",
         client.callProcedure("INSERT_BALANCE_TO_CUSTOMER",
                 balanceId,
                 createBalanceRequest.customerId(),
@@ -156,6 +137,15 @@ public class BalanceRepository {
         return new ResponseEntity<>("Balance created successfully", HttpStatus.CREATED);
     }
 
+    /**
+     * Get remaining customer balance by msisdn
+     * This method gets remaining customer balance by msisdn from voltDb
+     * @param msisdn
+     * @return
+     * @throws IOException
+     * @throws ProcCallException
+     * @throws InterruptedException
+     */
     public CustomerBalance getRemainingCustomerBalanceByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
         Client client = voltDBConnection.getClient();
         ClientResponse response = client.callProcedure("GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN", msisdn);
@@ -184,6 +174,6 @@ public class BalanceRepository {
             }
         }
         client.close();
-        return null;
+        throw new NotFoundException("Customer balance not found for msisdn: " + msisdn);
     }
 }

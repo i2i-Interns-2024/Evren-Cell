@@ -1,10 +1,11 @@
 package org.sk.i2i.evren.TGF.trafficGenerators;
 
 import akka.actor.ActorRef;
+import org.sk.i2i.evren.DataTransaction;
+import org.sk.i2i.evren.SmsTransaction;
 import org.sk.i2i.evren.TGF.Clock;
-import org.sk.i2i.evren.TGF.DTO.DataTransaction;
-import org.sk.i2i.evren.TGF.DTO.SmsTransaction;
-import org.sk.i2i.evren.TGF.DTO.VoiceTransaction;
+import org.sk.i2i.evren.TGF.RandomGenerator;
+import org.sk.i2i.evren.VoiceTransaction;
 
 public class TransactionGenerator implements Runnable{
 
@@ -19,10 +20,12 @@ public class TransactionGenerator implements Runnable{
     private long startTime = 0;
 
     /**
+     * @param type type of transaction to be generated
      * @param actor akka actor which will send transactions
      * @param delay delay between sending transactions in nanoseconds
      */
     public TransactionGenerator(Types type, ActorRef actor, long delay) {
+
         this.type = type;
         this.actor = actor;
         this.delay = delay;
@@ -35,6 +38,7 @@ public class TransactionGenerator implements Runnable{
      * @param maxTransactions max number of transactions to be sent, setting it to -1 will result in no limit
      */
     public TransactionGenerator(Types type, ActorRef actor, long delay, long maxTransactions) {
+
         this.type = type;
         this.actor = actor;
         this.delay = delay;
@@ -60,24 +64,41 @@ public class TransactionGenerator implements Runnable{
 
         }
 
-        System.out.println("traffic generation stopped...");
-        printStats();
+        System.out.println(type + " traffic generation stopped...");
     }
 
     private void sendTransaction() {
 
+        String msisdn = RandomGenerator.randomMsisdn();
+        int location = RandomGenerator.randomLocation();
+
         switch (type) {
             case DATA -> {
-                actor.tell(new DataTransaction("5461970089", 1, 7, 1), ActorRef.noSender());
+                DataTransaction trans = new DataTransaction(
+                        msisdn,
+                        location,
+                        RandomGenerator.randomDataUsage(),
+                        RandomGenerator.randomRatingGroup());
+                actor.tell(trans, ActorRef.noSender());
             }
             case VOICE -> {
-                actor.tell(new VoiceTransaction("5461970089", "5461970089", 1, 1), ActorRef.noSender());
+                VoiceTransaction trans =  new VoiceTransaction(
+                        msisdn,
+                        RandomGenerator.randomMsisdn(),
+                        location,
+                        RandomGenerator.randomDuration()
+                );
+                actor.tell(trans, ActorRef.noSender());
             }
             case SMS -> {
-                actor.tell(new SmsTransaction("5461970089", "5461970089", 1), ActorRef.noSender());
+                SmsTransaction trans = new SmsTransaction(
+                        msisdn,
+                        RandomGenerator.randomMsisdn(),
+                        location
+                );
+                actor.tell(trans, ActorRef.noSender());
             }
-        }
-
+        }//end switch
     }
 
     public void stopGeneration() {
@@ -90,12 +111,8 @@ public class TransactionGenerator implements Runnable{
 
     public void setDelay(long delay) {
 
-        System.out.println("delay updated from " + this.delay + " to " + delay);
+        System.out.println("delay updated:  " + this.delay + " --> " + delay + " nanoseconds");
         this.delay = delay;
-    }
-
-    public boolean isGenerating() {
-        return isGenerate;
     }
 
     public void printStats() {
@@ -103,9 +120,9 @@ public class TransactionGenerator implements Runnable{
         long resultTime = ((System.currentTimeMillis() - startTime));
 
         System.out.println(
-                "GENERATOR with type " + type +
-                "\nhas sent " + transCounter + " Transactions" +
-                "\nin " + resultTime + "ms | " + resultTime/1000 + "s | " +  resultTime/60000 + "min.\n"
+                type + " GENERATOR:" +
+                "\nSent:    " + transCounter + " Transactions" +
+                "\nThrough: " + resultTime + "ms | " +  resultTime/60000 + "min."
         );
 
     }
