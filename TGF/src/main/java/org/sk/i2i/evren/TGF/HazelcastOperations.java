@@ -9,9 +9,7 @@ import com.typesafe.config.ConfigFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
+
 
 public class HazelcastOperations {
 
@@ -22,12 +20,7 @@ public class HazelcastOperations {
 
         clientConfig.setClusterName(config.getString("hazelcast.cluster-name"));
         clientConfig.getNetworkConfig().addAddress(config.getString("hazelcast.network.address"));
-
-        java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
-        rootLogger.setLevel(Level.FINE);
-        for (Handler h : rootLogger.getHandlers()) {
-            h.setLevel(Level.WARNING);
-        }
+        clientConfig.setProperty("hazelcast.logging.type", "slf4j");
     }
 
     public List<String> getAllMsisdn() {
@@ -42,6 +35,7 @@ public class HazelcastOperations {
 //        }
 
         client.shutdown();
+        System.out.println("msisdn list was updated...");
 
         return msisdnSet;
     }
