@@ -1,0 +1,498 @@
+CREATE OR REPLACE PROCEDURE SELECT_ALL_PACKAGES (
+    p_cursor OUT SYS_REFCURSOR
+) IS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT PACKAGE_ID, PACKAGE_NAME, PRICE, AMOUNT_MINUTES, AMOUNT_DATA, AMOUNT_SMS, PERIOD 
+        FROM C##BILAL.PACKAGE;
+END SELECT_ALL_PACKAGES;
+
+
+GRANT EXECUTE ON C##BILAL.SELECT_ALL_PACKAGES TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_ALL_PACKAGES FOR C##BILAL.SELECT_ALL_PACKAGES;
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE get_all_customers(cust_cursor OUT SYS_REFCURSOR)
+IS
+BEGIN
+    OPEN cust_cursor FOR
+        SELECT CUST_ID, MSISDN, NAME, SURNAME, EMAIL, SDATE, TC_NO 
+        FROM C##BILAL.CUSTOMER;
+END get_all_customers;
+
+
+
+GRANT EXECUTE ON C##BILAL.get_all_customers TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_ALL_PACKAGES FOR C##BILAL.get_all_customers;
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE update_balance_by_msisdn (
+    p_msisdn IN VARCHAR2,
+    p_bal_lvl_minutes IN NUMBER,
+    p_bal_lvl_sms IN NUMBER,
+    p_bal_lvl_data IN NUMBER
+)
+IS
+    v_cust_id NUMBER;
+BEGIN
+    -- C##bilal.CUSTOMER tablosundan MSISDN'e göre CUST_ID değerini al
+    SELECT CUST_ID INTO v_cust_id
+    FROM C##bilal.CUSTOMER
+    WHERE MSISDN = p_msisdn;
+
+    -- BALANCE tablosunda ilgili CUST_ID'yi bul ve BAL_LVL_MINUTES, BAL_LVL_SMS, BAL_LVL_DATA değerlerini güncelle
+    UPDATE BALANCE
+    SET BAL_LVL_MINUTES = p_bal_lvl_minutes,
+        BAL_LVL_SMS = p_bal_lvl_sms,
+        BAL_LVL_DATA = p_bal_lvl_data
+    WHERE CUST_ID = v_cust_id;
+
+    -- İşlemi commit et
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        -- Eğer MSISDN bulunamazsa hata mesajı ver
+        RAISE_APPLICATION_ERROR(-20001, 'MSISDN bulunamadı.');
+    WHEN OTHERS THEN
+        -- Diğer hataları yakala
+        RAISE_APPLICATION_ERROR(-20002, 'Bir hata oluştu: ' || SQLERRM);
+END update_balance_by_msisdn;
+
+
+
+GRANT EXECUTE ON C##BILAL.update_balance_by_msisdn  TO C##ABMF;
+
+CREATE PUBLIC SYNONYM update_balance_by_msisdn FOR C##BILAL.update_balance_by_msisdn ;
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+
+
+CREATE OR REPLACE PROCEDURE insert_personal_usage (
+    p_giver_id IN VARCHAR2,
+    p_receiver_id IN VARCHAR2,
+    p_usage_date IN TIMESTAMP,
+    p_usage_type IN VARCHAR2,
+    p_usage_duration IN NUMBER
+)
+IS
+BEGIN
+    -- C##bilal.PERSONAL_USAGE tablosuna veri ekle
+    INSERT INTO C##bilal.PERSONAL_USAGE (
+        PERSONAL_USAGE_ID,
+        GIVER_ID,
+        RECEIVER_ID,
+        USAGE_DATE,
+        USAGE_TYPE,
+        USAGE_DURATION
+    ) VALUES (
+        personal_usage_id_sequence.NEXTVAL,  -- AUTO-INCREMENT ID
+        p_giver_id,
+        p_receiver_id,
+        p_usage_date,
+        p_usage_type,
+        p_usage_duration
+    );
+
+    -- İşlemi commit et
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Herhangi bir hata durumunda işlem başarısız olur ve hata mesajı döner
+        RAISE_APPLICATION_ERROR(-20003, 'Bir hata oluştu: ' || SQLERRM);
+END insert_personal_usage;
+
+
+
+GRANT EXECUTE ON C##BILAL.insert_personal_usage   TO C##ABMF;
+
+CREATE PUBLIC SYNONYM insert_personal_usage  FOR C##BILAL.insert_personal_usage  ;
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE SELECT_PACKAGE_DETAILS_NAME (
+    p_package_name   IN  C##BILAL.PACKAGE.PACKAGE_NAME%TYPE,
+    p_amount_minutes OUT C##BILAL.PACKAGE.AMOUNT_MINUTES%TYPE,
+    p_amount_sms     OUT C##BILAL.PACKAGE.AMOUNT_SMS%TYPE,
+    p_amount_data    OUT C##BILAL.PACKAGE.AMOUNT_DATA%TYPE
+) AS
+BEGIN
+    SELECT AMOUNT_MINUTES, AMOUNT_SMS, AMOUNT_DATA
+    INTO p_amount_minutes, p_amount_sms, p_amount_data
+    FROM C##BILAL.PACKAGE
+    WHERE PACKAGE_NAME = p_package_name;
+END;
+
+
+GRANT EXECUTE ON C##BILAL.SELECT_PACKAGE_DETAILS_NAME TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_PACKAGE_DETAILS_NAME FOR C##BILAL.SELECT_PACKAGE_DETAILS_NAME
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+
+
+CREATE OR REPLACE PROCEDURE SELECT_PACKAGE_ID (
+    p_package_name  IN  C##BILAL.PACKAGE.PACKAGE_NAME%TYPE,
+    p_package_id    OUT C##BILAL.PACKAGE.PACKAGE_ID%TYPE
+) AS
+BEGIN
+    SELECT PACKAGE_ID 
+    INTO p_package_id
+    FROM C##BILAL.PACKAGE
+    WHERE PACKAGE_NAME = p_package_name;
+END;
+
+/
+
+
+GRANT EXECUTE ON C##BILAL.SELECT_PACKAGE_ID TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_PACKAGE_ID FOR C##BILAL.SELECT_PACKAGE_ID;
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE INSERT_BALANCE_TO_CUSTOMER (
+    p_cust_id        IN C##BILAL.BALANCE.CUST_ID%TYPE,
+    p_package_id     IN C##BILAL.BALANCE.PACKAGE_ID%TYPE,
+    p_bal_lvl_minutes IN C##BILAL.BALANCE.BAL_LVL_MINUTES%TYPE,
+    p_bal_lvl_sms    IN C##BILAL.BALANCE.BAL_LVL_SMS%TYPE,
+    p_bal_lvl_data   IN C##BILAL.BALANCE.BAL_LVL_DATA%TYPE,
+    p_sdate          IN C##BILAL.BALANCE.SDATE%TYPE,
+    p_edate          IN C##BILAL.BALANCE.EDATE%TYPE
+) AS
+BEGIN
+    INSERT INTO C##BILAL.BALANCE (
+        BALANCE_ID, CUST_ID, PACKAGE_ID, BAL_LVL_MINUTES, BAL_LVL_SMS, BAL_LVL_DATA, SDATE, EDATE
+    ) VALUES (
+        balance_id_sequence.NEXTVAL, p_cust_id, p_package_id, p_bal_lvl_minutes, p_bal_lvl_sms, p_bal_lvl_data, p_sdate, p_edate
+    );
+END;
+/
+
+
+GRANT EXECUTE ON C##BILAL.INSERT_BALANCE_TO_CUSTOMER TO C##AOM;
+
+CREATE PUBLIC SYNONYM INSERT_BALANCE_TO_CUSTOMER FOR C##BILAL.INSERT_BALANCE_TO_CUSTOMER;
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE INSERT_CUSTOMER (
+    p_name      IN C##BILAL.CUSTOMER.NAME%TYPE,
+    p_surname   IN C##BILAL.CUSTOMER.SURNAME%TYPE,
+    p_msisdn    IN C##BILAL.CUSTOMER.MSISDN%TYPE,
+    p_email     IN C##BILAL.CUSTOMER.EMAIL%TYPE,
+    p_password  IN C##BILAL.CUSTOMER.PASSWORD%TYPE,
+    p_sdate     IN C##BILAL.CUSTOMER.SDATE%TYPE,
+    p_tc_no     IN C##BILAL.CUSTOMER.TC_NO%TYPE
+) AS
+BEGIN
+    INSERT INTO C##BILAL.CUSTOMER (
+        CUST_ID, NAME, SURNAME, MSISDN, EMAIL, PASSWORD, SDATE, TC_NO
+    ) VALUES (
+        cust_id_sequence.NEXTVAL, p_name, p_surname, p_msisdn, p_email, p_password, p_sdate, p_tc_no
+    );
+END;
+
+GRANT EXECUTE ON C##BILAL.INSERT_CUSTOMER TO C##AOM;
+
+CREATE PUBLIC SYNONYM INSERT_CUSTOMER FOR C##BILAL.INSERT_CUSTOMER;
+
+
+CREATE OR REPLACE PROCEDURE SELECT_PACKAGE_ID (
+    p_package_name  IN  C##BILAL.PACKAGE.PACKAGE_NAME%TYPE,
+    p_package_id    OUT C##BILAL.PACKAGE.PACKAGE_ID%TYPE
+) AS
+BEGIN
+    SELECT PACKAGE_ID 
+    INTO p_package_id
+    FROM C##BILAL.PACKAGE
+    WHERE PACKAGE_NAME = p_package_name;
+END;
+
+/
+
+
+GRANT EXECUTE ON C##BILAL.SELECT_PACKAGE_ID TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_PACKAGE_ID FOR C##BILAL.SELECT_PACKAGE_ID;
+
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE SELECT_PACKAGE_DETAILS_ID (
+    p_package_id      IN  C##BILAL.PACKAGE.PACKAGE_ID%TYPE,
+    p_amount_minutes  OUT C##BILAL.PACKAGE.AMOUNT_MINUTES%TYPE,
+    p_amount_sms      OUT C##BILAL.PACKAGE.AMOUNT_SMS%TYPE,
+    p_amount_data     OUT C##BILAL.PACKAGE.AMOUNT_DATA%TYPE,
+    p_period          OUT C##BILAL.PACKAGE.PERIOD%TYPE
+) AS
+BEGIN
+    SELECT AMOUNT_MINUTES, AMOUNT_SMS, AMOUNT_DATA, PERIOD 
+    INTO p_amount_minutes, p_amount_sms, p_amount_data, p_period
+    FROM C##BILAL.PACKAGE
+    WHERE PACKAGE_ID = p_package_id;
+END;
+
+
+GRANT EXECUTE ON C##BILAL.SELECT_PACKAGE_DETAILS_ID TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_PACKAGE_DETAILS_ID FOR C##BILAL.SELECT_PACKAGE_DETAILS_ID;
+
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE SELECT_PACKAGE_DETAILS_ID (
+    p_package_id  IN  C##BILAL.PACKAGE.PACKAGE_ID%TYPE,
+    p_cursor      OUT SYS_REFCURSOR
+) IS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT AMOUNT_MINUTES, AMOUNT_SMS, AMOUNT_DATA, PERIOD 
+        FROM C##BILAL.PACKAGE
+        WHERE PACKAGE_ID = p_package_id;
+END SELECT_PACKAGE_DETAILS_ID;
+/
+
+
+GRANT EXECUTE ON C##BILAL.SELECT_PACKAGE_DETAILS_ID TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_PACKAGE_DETAILS_ID FOR C##BILAL.SELECT_PACKAGE_DETAILS_ID;
+
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE UPDATE_CUSTOMER_PASSWORD (
+    p_email        IN CUSTOMER.EMAIL%TYPE,
+    p_tc_number    IN CUSTOMER.TC_NO%TYPE,
+    p_new_password IN CUSTOMER.PASSWORD%TYPE
+) AS
+BEGIN
+    UPDATE CUSTOMER
+    SET PASSWORD = p_new_password
+    WHERE EMAIL = p_email AND TC_NO = p_tc_number;
+END;
+
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO (
+    p_email     IN CUSTOMER.EMAIL%TYPE,
+    p_tc_number IN CUSTOMER.TC_NO%TYPE,
+    p_count     OUT NUMBER
+) AS
+BEGIN
+    SELECT COUNT(*)
+    INTO p_count
+    FROM CUSTOMER
+    WHERE EMAIL = p_email AND TC_NO = p_tc_number;
+END;
+
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE SELECT_CUSTOMER_ID_BY_EMAIL_AND_TCNUMBER (
+    p_email      IN  CUSTOMER.EMAIL%TYPE,
+    p_tc_number  IN  CUSTOMER.TC_NO%TYPE,
+    p_customer_id OUT CUSTOMER.CUST_ID%TYPE
+) AS
+BEGIN
+    SELECT CUST_ID
+    INTO p_customer_id
+    FROM CUSTOMER
+    WHERE EMAIL = p_email AND TC_NO = p_tc_number;
+END;
+/
+
+GRANT EXECUTE ON C##BILAL.SELECT_CUSTOMER_ID_BY_EMAIL_AND_TCNUMBER TO C##AOM;
+
+CREATE PUBLIC SYNONYM SELECT_CUSTOMER_ID_BY_EMAIL_AND_TCNUMBER FOR C##BILAL.SELECT_CUSTOMER_ID_BY_EMAIL_AND_TCNUMBER;
+
+
+
+
+
+
+
+******************************************************************************************************
+******************************************************************************************************
+
+CREATE OR REPLACE PROCEDURE INSERT_NOTIFICATION_LOG (
+    p_notification_type IN NOTIFICATION_LOGS.NOTIFICATION_TYPE%TYPE,
+    p_notification_time IN NOTIFICATION_LOGS.NOTIFICATION_TIME%TYPE,
+    p_customer_id       IN NOTIFICATION_LOGS.CUSTOMER_ID%TYPE
+) AS
+BEGIN
+    INSERT INTO NOTIFICATION_LOGS (
+        NOTIFICATION_ID, NOTIFICATION_TYPE, NOTIFICATION_TIME, CUSTOMER_ID
+    ) VALUES (
+        notification_id_sequence.NEXTVAL, p_notification_type, p_notification_time, p_customer_id
+    );
+END;
+
+******************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************
+******************************************************************************************************
+
+
+
+CREATE OR REPLACE PROCEDURE update_balance_by_msisdn_minutes (
+    p_msisdn IN VARCHAR2,
+    p_bal_lvl_minutes IN NUMBER
+)
+IS
+    v_cust_id NUMBER;
+BEGIN
+    -- C##bilal.CUSTOMER tablosundan MSISDN'e göre CUST_ID değerini al
+    SELECT CUST_ID INTO v_cust_id
+    FROM C##bilal.CUSTOMER
+    WHERE MSISDN = p_msisdn;
+
+    -- BALANCE tablosunda ilgili CUST_ID'yi bul ve BAL_LVL_MINUTES değerini güncelle
+    UPDATE BALANCE
+    SET BAL_LVL_MINUTES = p_bal_lvl_minutes
+    WHERE CUST_ID = v_cust_id;
+
+    -- İşlemi commit et
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        -- Eğer MSISDN bulunamazsa hata mesajı ver
+        RAISE_APPLICATION_ERROR(-20001, 'MSISDN bulunamadı.');
+    WHEN OTHERS THEN
+        -- Diğer hataları yakala
+        RAISE_APPLICATION_ERROR(-20002, 'Bir hata oluştu: ' || SQLERRM);
+END update_balance_by_msisdn_minutes;
+
+
+GRANT EXECUTE ON C##BILAL.update_balance_by_msisdn_minutes TO C##ABMF;
+
+CREATE PUBLIC SYNONYM update_balance_by_msisdn_minutes FOR C##BILAL.update_balance_by_msisdn_minutes;
+
+****************ÇALIŞTI YUKARISI ***********************
+********************************************************
+
+
+CREATE OR REPLACE PROCEDURE update_balance_by_msisdn_sms (
+    p_msisdn IN VARCHAR2,
+    p_bal_lvl_sms IN NUMBER
+)
+IS
+    v_cust_id NUMBER;
+BEGIN
+    -- C##bilal.CUSTOMER tablosundan MSISDN'e göre CUST_ID değerini al
+    SELECT CUST_ID INTO v_cust_id
+    FROM C##bilal.CUSTOMER
+    WHERE MSISDN = p_msisdn;
+
+    -- BALANCE tablosunda ilgili CUST_ID'yi bul ve BAL_LVL_SMS değerini güncelle
+    UPDATE BALANCE
+    SET BAL_LVL_SMS = p_bal_lvl_sms
+    WHERE CUST_ID = v_cust_id;
+
+    -- İşlemi commit et
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        -- Eğer MSISDN bulunamazsa hata mesajı ver
+        RAISE_APPLICATION_ERROR(-20001, 'MSISDN bulunamadı.');
+    WHEN OTHERS THEN
+        -- Diğer hataları yakala
+        RAISE_APPLICATION_ERROR(-20002, 'Bir hata oluştu: ' || SQLERRM);
+END update_balance_by_msisdn_sms;
+
+
+GRANT EXECUTE ON C##BILAL.update_balance_by_msisdn_sms TO C##ABMF;
+
+CREATE PUBLIC SYNONYM update_balance_by_msisdn_sms FOR C##BILAL.update_balance_by_msisdn_sms;
+
+
+****************ÇALIŞTI YUKARISI ***********************
+********************************************************
+
+CREATE OR REPLACE PROCEDURE update_balance_by_msisdn_data (
+    p_msisdn IN VARCHAR2,
+    p_bal_lvl_data IN NUMBER
+)
+IS
+    v_cust_id NUMBER;
+BEGIN
+    -- C##bilal.CUSTOMER tablosundan MSISDN'e göre CUST_ID değerini al
+    SELECT CUST_ID INTO v_cust_id
+    FROM C##bilal.CUSTOMER
+    WHERE MSISDN = p_msisdn;
+
+    -- BALANCE tablosunda ilgili CUST_ID'yi bul ve BAL_LVL_DATA değerini güncelle
+    UPDATE BALANCE
+    SET BAL_LVL_DATA = p_bal_lvl_data
+    WHERE CUST_ID = v_cust_id;
+
+    -- İşlemi commit et
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        -- Eğer MSISDN bulunamazsa hata mesajı ver
+        RAISE_APPLICATION_ERROR(-20001, 'MSISDN bulunamadı.');
+    WHEN OTHERS THEN
+        -- Diğer hataları yakala
+        RAISE_APPLICATION_ERROR(-20002, 'Bir hata oluştu: ' || SQLERRM);
+END update_balance_by_msisdn_data;
+
+
+GRANT EXECUTE ON C##BILAL.update_balance_by_msisdn_data TO C##ABMF;
+
+CREATE PUBLIC SYNONYM update_balance_by_msisdn_data FOR C##BILAL.update_balance_by_msisdn_data;
