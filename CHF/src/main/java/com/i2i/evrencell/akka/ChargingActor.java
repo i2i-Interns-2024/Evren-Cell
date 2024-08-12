@@ -28,14 +28,19 @@ public class ChargingActor extends AbstractActor {
     }
 
     private void handleDataMessage(DataTransaction dataMessage) {
+        System.out.println("Received data message");
         balanceCalculator.calculateDataRequest(dataMessage);
     }
 
     private void handleSmsMessage(SmsTransaction smsMessage) {
+        System.out.println("Received sms message");
+
         balanceCalculator.calculateSmsRequest(smsMessage);
     }
 
     private void handleVoiceMessage(VoiceTransaction voiceMessage) {
+        System.out.println("Received voice message");
+
         balanceCalculator.calculateVoiceRequest(voiceMessage);
     }
 }
