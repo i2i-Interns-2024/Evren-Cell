@@ -1,32 +1,30 @@
 package com.i2i.evrencell.abmf;
 
+import com.i2i.evrencell.kafka.Subscriber;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import com.i2i.evrencell.kafka.message.BalanceMessage;
 
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class ABMF {
 
     public static void main(String[] args) throws SQLException {
-        String url = "";
-        String userName = "";
-        String password = "";
+        String oracleUrl = ConfigLoader.getProperty("oracle.url");
+        String oracleUserName = ConfigLoader.getProperty("oracle.username");
+        String oraclePassword = ConfigLoader.getProperty("oracle.password");
 
-        OracleOperations oracleOperations = new OracleOperations(url, userName, password);
+        OracleOperations oracleOperations = new OracleOperations(oracleUrl, oracleUserName, oraclePassword);
 
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "***********:9092");
-        props.put("group.id", "AA111");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "com.i2i.evrencell.abmf.BalanceMessageDeserializer");
+        Subscriber<BalanceMessage> subscriber = new Subscriber<BalanceMessage>();
 
-        KafkaOperations kafkaOperations = new KafkaOperations(props, "BalanceTopic");
+        subscriber.createBalanceMessageConsumer();
 
         while (true) {
-            ConsumerRecords<String, BalanceMessage> records = kafkaOperations.pollMessage();
+            ConsumerRecords<String, BalanceMessage> records = subscriber.poll();
             for (ConsumerRecord<String, BalanceMessage> record : records) {
                 BalanceMessage message = record.value();
+                System.out.println(message);
                 oracleOperations.updateUserBalance(message);
             }
         }
