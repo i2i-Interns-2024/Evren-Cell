@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>EVRENCELL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" media="screen" href="css/registercss.css">
+    <script src="js/registerjs.js" type="module" defer></script>
+</head>
+
+<body>
+    <div class="kutu1">
+        <form id="registerForm" action="kaan-api" method="post">
+            <div class="kutu3">
+                <div class="label1"><label for="name">Name:</label></div>
+                <div class="kutu4">
+                    <input class="input" id="name" name="name" autocomplete="on" maxlength="50" minlength="2" required type="text">
+                </div>
+            </div>
+
+            <div class="kutu3">
+                <div class="label1"><label for="surname">Surname:</label></div>
+                <div class="kutu4">
+                    <input class="input" id="surname" name="surname" autocomplete="on" maxlength="50" minlength="2" required type="text">
+                </div>
+            </div>
+
+            <div class="kutu3">
+                <div class="label1"><label for="nationalid">National ID:</label></div>
+                <div class="kutu4">
+                    <input class="input" id="nationalid" name="nationalid" autocomplete="on" maxlength="11" minlength="11" required type="text" pattern="\d{11}">
+                </div>
+            </div>
+
+            <div class="kutu3">
+                <div class="label1"><label for="password">Password:</label></div>
+                <div class="kutu4">
+                    <input class="input" id="password" name="password" autocomplete="on" maxlength="32" minlength="8" required type="password">
+                </div>
+            </div>
+
+            <div class="kutu3">
+                <div class="label1"><label for="phone">Telephone Number:</label></div>
+                <div class="kutu4">
+                    <input class="input" id="phone" name="phone" autocomplete="on" maxlength="10" minlength="10" required type="text" pattern="^5[0-9]{9}$">
+                </div>
+            </div>
+
+            <div class="kutu3">
+                <div class="label1"><label for="email">Email:</label></div>
+                <div class="kutu4">
+                    <input class="input" id="email" name="email" autocomplete="on" maxlength="50" minlength="5" required type="email">
+                </div>
+            </div>
+
+            <div class="kutu3">
+                <div class="label1"><label for="package">Tariff:</label></div>
+                <div class="select">
+                    <select id="package" name="package" required>
+                        <option value="">Select</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn" id="registerButton">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="kutu2">
+        <img class="img" src="/src/main/resources/static/images/logo.png" alt="Logo">
+    </div>
+
+</body>
+
+</html>

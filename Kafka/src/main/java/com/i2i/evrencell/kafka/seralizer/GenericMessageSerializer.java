@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class GenericMessageSerializer<T> implements Serializer<T> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public GenericMessageSerializer() {
+    }
+
     @Override
     public byte[] serialize(String topic, T data) {
         try {

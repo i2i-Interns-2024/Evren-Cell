@@ -1,42 +1,44 @@
 package com.i2i.evrencell;
 
-import com.i2i.evrencell.voltdb.UserDetails;
+import com.i2i.evrencell.voltdb.VoltCustomer;
+import com.i2i.evrencell.voltdb.VoltPackage;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
-import org.voltdb.client.Client;
-import org.voltdb.client.ClientConfig;
-import org.voltdb.client.ClientFactory;
-import org.voltdb.client.ClientResponse;
-import org.voltdb.VoltTable;
+import org.voltdb.client.ProcCallException;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException, ProcCallException {
 
-        //mesaj
+        double startTime = System.currentTimeMillis();
         VoltdbOperator voltdbOperator = new VoltdbOperator();
-        System.out.println(voltdbOperator.getDataBalance("5551234567"));
 
-        /*ClientConfig clientConfig = new ClientConfig();
-        Client client = ClientFactory.createClient(clientConfig);
+        //voltdbOperator.updatePassword("buBenimYepyeniParolam", "john.doe@example.com","12345678901");
+        //System.out.println(voltdbOperator.getCustomerIdByEmailAndTc("john.doe@example.com","12345678901"));
 
-        try {
-            client.createConnection("34.132.46.242:32803"); //usa server
+        //System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
+/*
 
-            ClientResponse response0 = client.callProcedure("GET_CUSTOMER_AMOUNT_DATA_BY_MSISDN", "5551234567");
+        voltdbOperator.updateDataBalance(1500,"5444444486");
+        voltdbOperator.updateSmsBalance(1500,"5444444486");
+        voltdbOperator.updateVoiceBalance(1500,"5444444486");
+*/
 
-            if (response0.getStatus() == ClientResponse.SUCCESS) {
-                VoltTable results = response0.getResults()[0];
-                while (results.advanceRow()) {
-                    System.out.println(
-                            "AMOUNT_DATA: " + results.getLong("BAL_LVL_DATA"));
-                }
-            } else {
-                System.out.println("Procedure call failed: " + response0.getStatusString());
-            }
+        voltdbOperator.updatePassword("john.doe@example.com","12345678901","selam12212");
+        /*voltdbOperator.updateVoiceBalance(10,"haci");
+        voltdbOperator.updateSmsBalance(100,"haci");
+        voltdbOperator.updateDataBalance(100,"haci");*/
+        /*voltdbOperator.updateVoiceBalance(620,"5537030253");
+        voltdbOperator.updateSmsBalance(280,"5537030253");
+*/
+        /*voltdbOperator.insertCustomer(87,"son1","son1","son1","son1","son",new Timestamp(System.currentTimeMillis()),"son1");
+        voltdbOperator.insertBalance(73,87,3,999,999,999,new Timestamp(System.currentTimeMillis()),new Timestamp(System.currentTimeMillis()));
+        System.out.println(voltdbOperator.getPackageInfoByPackageId(2));*/
 
-            // Bağlantıyı kapatıyoruz
-            client.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
+        double endTime = System.currentTimeMillis();
+        double elapsedTime = endTime - startTime;
+        System.out.println("Elapsed time: " + elapsedTime);
     }
 }

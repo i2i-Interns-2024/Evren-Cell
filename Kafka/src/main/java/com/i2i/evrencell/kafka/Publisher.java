@@ -30,6 +30,7 @@ public class Publisher <T extends Message> {
     }
 
     public void createBalanceMessageProducer() {
+
         producer = createProducer(BalanceMessageSerializer.class.getName());
     }
 

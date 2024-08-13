@@ -1,6 +1,8 @@
 package com.i2i.evrencell.kafka.message;
 
-import com.i2i.evrencell.kafka.BalanceType;
+
+import java.sql.Time;
+import java.sql.Timestamp;
 
 public class NotificationMessage implements Message {
 
@@ -11,8 +13,10 @@ public class NotificationMessage implements Message {
     private final BalanceType type;
     private final Integer amount;
     private final String threshold;
+    private final Timestamp timestamp ;
 
-    public NotificationMessage(String name, String lastname, String msisdn, String email, BalanceType type, Integer amount, String threshold) {
+
+    public NotificationMessage(String name, String lastname, String msisdn, String email, BalanceType type, Integer amount, String threshold,Timestamp timestamp) {
         this.name = name;
         this.lastname = lastname;
         this.msisdn = msisdn;
@@ -20,6 +24,7 @@ public class NotificationMessage implements Message {
         this.type = type;
         this.amount = amount;
         this.threshold = threshold;
+        this.timestamp = timestamp;
     }
 
     public String getName() {
@@ -49,4 +54,6 @@ public class NotificationMessage implements Message {
     public String getThreshold() {
         return threshold;
     }
+
+    public Timestamp getTimestamp() {return timestamp;}
 }

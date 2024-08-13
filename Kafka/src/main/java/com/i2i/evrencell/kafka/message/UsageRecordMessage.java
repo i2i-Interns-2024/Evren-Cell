@@ -1,6 +1,6 @@
 package com.i2i.evrencell.kafka.message;
 
-import com.i2i.evrencell.kafka.BalanceType;
+
 
 import java.sql.Timestamp;
 
