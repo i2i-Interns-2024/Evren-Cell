@@ -20,11 +20,13 @@ public class Main {
 
         //System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
 
-        //voltdbOperator.updateDataBalance(99,"5444444486");
-
-        voltdbOperator.insertCustomer(87,"son1","son1","son1","son1","son",new Timestamp(System.currentTimeMillis()),"son1");
+        voltdbOperator.updateDataBalance(1200,"5537030253");
+        /*voltdbOperator.updateVoiceBalance(620,"5537030253");
+        voltdbOperator.updateSmsBalance(280,"5537030253");
+*/
+        /*voltdbOperator.insertCustomer(87,"son1","son1","son1","son1","son",new Timestamp(System.currentTimeMillis()),"son1");
         voltdbOperator.insertBalance(73,87,3,999,999,999,new Timestamp(System.currentTimeMillis()),new Timestamp(System.currentTimeMillis()));
-        System.out.println(voltdbOperator.getPackageInfoByPackageId(2));
+        System.out.println(voltdbOperator.getPackageInfoByPackageId(2));*/
 
         double endTime = System.currentTimeMillis();
         double elapsedTime = endTime - startTime;
