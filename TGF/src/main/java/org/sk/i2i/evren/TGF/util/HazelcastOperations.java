@@ -1,4 +1,4 @@
-package org.sk.i2i.evren.TGF;
+package org.sk.i2i.evren.TGF.util;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;

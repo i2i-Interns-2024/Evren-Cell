@@ -1,4 +1,4 @@
-package org.sk.i2i.evren.TGF;
+package org.sk.i2i.evren.TGF.util;
 
 import java.util.List;
 import java.util.Random;
