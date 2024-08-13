@@ -4,14 +4,10 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import org.i2i.hazelcast.utils.configurations.Configuration;
 
+
+
 public class HazelcastManager {
     private static final ClientConfig config = Configuration.getConfig();
-
-    static {
-
-        config.setProperty("hazelcast.logging.type", "slf4j");
-    }
-
     private static final HazelcastInstance hazelcast = HazelcastClient.newHazelcastClient(config);
 
     public static HazelcastInstance getInstance() {
