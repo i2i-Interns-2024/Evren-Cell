@@ -100,7 +100,7 @@ public class VoltdbOperator {
 
 
     public void insertCustomer(int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
-        handleProcedureInsertCustomer("INSERT_NEW_CUSTOMER", cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
+        handleProcedureInsertCustomer(cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
     }
 
     public void insertBalance(int balance_id, int cust_id, int package_id, int bal_lvl_minutes, int bal_lvl_sms, int bal_lvl_data, Timestamp sdate, Timestamp edate) {
@@ -123,10 +123,15 @@ public class VoltdbOperator {
         handleProcedure("UPDATE_CUSTOMER_AMOUNT_SMS_BY_MSISDN", smsUsage, msisdn);
     }
 
-    public void updatePassword(String password, String email, String tc_no) {
-        handleProcedureChangePassword("UPDATE_CUSTOMER_PASSWORD", password, email, tc_no);
-    }
+    public void updatePassword(String email, String tcNumber, String encryptedPassword) throws
+            IOException,
+            ProcCallException,
+            InterruptedException {
+        Client client1 = getClient();
+        client1.callProcedure("UPDATE_CUSTOMER_PASSWORD", encryptedPassword, email, tcNumber);
+        client1.close();
 
+    }
 
 
 
@@ -332,28 +337,29 @@ public class VoltdbOperator {
     }
 
 
-    private void handleProcedureChangePassword(String procedureName, String password, String email, String tc_no) {
+    /*private void handleProcedureChangePassword(String password, String email, String tc_no) {
         try {
-            ClientResponse response = client.callProcedure(procedureName, password, email, tc_no);
+            Client client1 = getClient();
+            ClientResponse response = client1.callProcedure("UPDATE_CUSTOMER_PASSWORD", password, email, tc_no);
             if (response.getStatus() != ClientResponse.SUCCESS) {
                 throw new RuntimeException("Procedure call failed: " + response.getStatusString());
             }
         } catch (IOException | ProcCallException e) {
-            logger.error("Error while calling procedure: " + procedureName, e);
-            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+            logger.error("Error while calling procedure: " + "UPDATE_CUSTOMER_PASSWORD", e);
+            throw new RuntimeException("Error while calling procedure: " + "UPDATE_CUSTOMER_PASSWORD", e);
         }
-    }
+    }*/
 
 
-    private void handleProcedureInsertCustomer(String procedureName, int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
+    private void handleProcedureInsertCustomer(int cust_id, String name, String surname, String msisdn, String email, String password, Timestamp sdate, String TCNumber) {
         try {
-            ClientResponse response = client.callProcedure(procedureName, cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
+            ClientResponse response = client.callProcedure("INSERT_NEW_CUSTOMER", cust_id, name, surname, msisdn, email, password, sdate, TCNumber);
             if (response.getStatus() != ClientResponse.SUCCESS) {
                 throw new RuntimeException("Procedure call failed: " + response.getStatusString());
             }
         } catch (IOException | ProcCallException e) {
-            logger.error("Error while calling procedure: " + procedureName, e);
-            throw new RuntimeException("Error while calling procedure: " + procedureName, e);
+            logger.error("Error while calling procedure: " + "INSERT_NEW_CUSTOMER", e);
+            throw new RuntimeException("Error while calling procedure: " + "INSERT_NEW_CUSTOMER", e);
         }
     }
 
