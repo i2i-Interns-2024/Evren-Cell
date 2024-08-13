@@ -19,10 +19,14 @@ public class Main {
         //System.out.println(voltdbOperator.getCustomerIdByEmailAndTc("john.doe@example.com","12345678901"));
 
         //System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
+/*
 
         voltdbOperator.updateDataBalance(1500,"5444444486");
         voltdbOperator.updateSmsBalance(1500,"5444444486");
         voltdbOperator.updateVoiceBalance(1500,"5444444486");
+*/
+
+        voltdbOperator.updatePassword("john.doe@example.com","12345678901","selam12212");
         /*voltdbOperator.updateVoiceBalance(10,"haci");
         voltdbOperator.updateSmsBalance(100,"haci");
         voltdbOperator.updateDataBalance(100,"haci");*/
