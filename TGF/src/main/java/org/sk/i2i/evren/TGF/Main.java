@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import org.sk.i2i.evren.TGF.actors.AkkaActor;
 import org.sk.i2i.evren.TGF.actors.DeadLetterListener;
 import org.sk.i2i.evren.TGF.command.CommandHandler;
+import org.sk.i2i.evren.TGF.constants.TransType;
 import org.sk.i2i.evren.TGF.management.DelayManager;
 import org.sk.i2i.evren.TGF.management.StatsManager;
 import org.sk.i2i.evren.TGF.management.ThreadsManager;
@@ -28,9 +29,9 @@ public class Main {
         actorSystem.eventStream().subscribe(deadLetterListener, DeadLetter.class);
 
         //runnable traffic generators
-        TrafficGenerator voice = new TrafficGenerator(TrafficGenerator.TransTypes.VOICE, actor, statsManager, delayManager);
-        TrafficGenerator data = new TrafficGenerator(TrafficGenerator.TransTypes.DATA, actor, statsManager, delayManager);
-        TrafficGenerator sms = new TrafficGenerator(TrafficGenerator.TransTypes.SMS, actor, statsManager, delayManager);
+        TrafficGenerator voice = new TrafficGenerator(TransType.VOICE, actor, statsManager, delayManager);
+        TrafficGenerator data = new TrafficGenerator(TransType.DATA, actor, statsManager, delayManager);
+        TrafficGenerator sms = new TrafficGenerator(TransType.SMS, actor, statsManager, delayManager);
 
         ThreadsManager threadsManager = new ThreadsManager(voice, data, sms);
 

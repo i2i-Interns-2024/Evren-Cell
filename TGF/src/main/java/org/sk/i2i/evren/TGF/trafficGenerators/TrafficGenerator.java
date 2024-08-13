@@ -3,6 +3,7 @@ package org.sk.i2i.evren.TGF.trafficGenerators;
 import akka.actor.ActorRef;
 import org.sk.i2i.evren.DataTransaction;
 import org.sk.i2i.evren.SmsTransaction;
+import org.sk.i2i.evren.TGF.constants.TransType;
 import org.sk.i2i.evren.TGF.management.DelayManager;
 import org.sk.i2i.evren.TGF.management.StatsManager;
 import org.sk.i2i.evren.TGF.util.Clock;
@@ -10,9 +11,7 @@ import org.sk.i2i.evren.TGF.util.RandomGenerator;
 import org.sk.i2i.evren.VoiceTransaction;
 
 public class TrafficGenerator implements Runnable{
-
-    public enum TransTypes { DATA, VOICE, SMS }
-    private final TransTypes type;
+    private final TransType type;
     private final ActorRef actor;
     private boolean isGenerate = true;
 
@@ -24,7 +23,7 @@ public class TrafficGenerator implements Runnable{
      * @param actor akka actor which will send transactions
      *
      */
-    public TrafficGenerator(TransTypes type, ActorRef actor, StatsManager statsManager, DelayManager delayManager) {
+    public TrafficGenerator(TransType type, ActorRef actor, StatsManager statsManager, DelayManager delayManager) {
 
         this.type = type;
         this.actor = actor;

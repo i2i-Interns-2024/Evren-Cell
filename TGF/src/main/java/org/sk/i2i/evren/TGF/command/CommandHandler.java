@@ -1,9 +1,9 @@
 package org.sk.i2i.evren.TGF.command;
 
+import org.sk.i2i.evren.TGF.constants.TransType;
 import org.sk.i2i.evren.TGF.management.DelayManager;
 import org.sk.i2i.evren.TGF.management.StatsManager;
 import org.sk.i2i.evren.TGF.management.ThreadsManager;
-import org.sk.i2i.evren.TGF.trafficGenerators.TrafficGenerator;
 import org.sk.i2i.evren.TGF.util.RandomGenerator;
 
 import java.util.InputMismatchException;
@@ -37,9 +37,9 @@ public class CommandHandler {
                 case "start" -> threadManager.startThreads();
                 case "stop"          -> threadManager.stopThreads();
                 case "setDelay"      -> updateDelayAll();
-                case "setDelayVoice" -> updateDelay(TrafficGenerator.TransTypes.VOICE);
-                case "setDelayData"  -> updateDelay(TrafficGenerator.TransTypes.DATA);
-                case "setDelaySms"   -> updateDelay(TrafficGenerator.TransTypes.SMS);
+                case "setDelayVoice" -> updateDelay(TransType.VOICE);
+                case "setDelayData"  -> updateDelay(TransType.DATA);
+                case "setDelaySms"   -> updateDelay(TransType.SMS);
                 case "printDelay"    -> delayManager.printDelay();
                 case "printStats"    -> statsManager.printStats();
                 case "resetStats"    -> statsManager.resetStats();
@@ -62,7 +62,7 @@ public class CommandHandler {
 
     }
 
-    private void updateDelay(TrafficGenerator.TransTypes type) {
+    private void updateDelay(TransType type) {
 
         try {
             System.out.println("enter delay value:");

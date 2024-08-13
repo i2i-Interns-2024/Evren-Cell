@@ -1,12 +1,12 @@
 package org.sk.i2i.evren.TGF.management;
 
-import org.sk.i2i.evren.TGF.trafficGenerators.TrafficGenerator;
+import org.sk.i2i.evren.TGF.constants.TransType;
 
 import java.util.HashMap;
 
 public class StatsManager {
 
-    private final HashMap<TrafficGenerator.TransTypes, Counter> map = new HashMap<>();
+    private final HashMap<TransType, Counter> map = new HashMap<>();
 
     private class Counter {
         private long counter = 0;
@@ -15,27 +15,27 @@ public class StatsManager {
     }
 
     public StatsManager() {
-        for (TrafficGenerator.TransTypes type : TrafficGenerator.TransTypes.values()) {
+        for (TransType type : TransType.values()) {
             map.put(type, new Counter());
         }
     }
 
-    public void incrementCounter(TrafficGenerator.TransTypes type) {
+    public void incrementCounter(TransType type) {
 
         map.get(type).counter++;
     }
 
-    public void incrementDeadCounter(TrafficGenerator.TransTypes type) {
+    public void incrementDeadCounter(TransType type) {
 
         map.get(type).deadCounter++;
     }
 
-    public void resetTimer(TrafficGenerator.TransTypes type) {
+    public void resetTimer(TransType type) {
         map.get(type).startTime = System.currentTimeMillis();
     }
 
     public void printStats() {
-        for (TrafficGenerator.TransTypes type : TrafficGenerator.TransTypes.values()) {
+        for (TransType type : TransType.values()) {
 
             long resultTime = ((System.currentTimeMillis() - map.get(type).startTime));
 
@@ -51,7 +51,7 @@ public class StatsManager {
 
     public void resetStats() {
 
-        for (TrafficGenerator.TransTypes type : TrafficGenerator.TransTypes.values()) {
+        for (TransType type : TransType.values()) {
             map.get(type).counter = 0;
             map.get(type).deadCounter = 0;
             map.get(type).startTime = System.currentTimeMillis();

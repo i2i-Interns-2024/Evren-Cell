@@ -1,6 +1,6 @@
 package org.sk.i2i.evren.TGF.management;
 
-import org.sk.i2i.evren.TGF.trafficGenerators.TrafficGenerator;
+import org.sk.i2i.evren.TGF.constants.TransType;
 
 public class DelayManager {
 
@@ -46,7 +46,7 @@ public class DelayManager {
         this.smsDelay = smsDelay;
     }
 
-    public long getDelay(TrafficGenerator.TransTypes type) {
+    public long getDelay(TransType type) {
         switch (type) {
             case DATA -> {
                 return getDataDelay();
