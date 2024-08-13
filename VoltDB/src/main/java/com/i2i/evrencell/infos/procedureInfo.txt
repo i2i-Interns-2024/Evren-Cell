@@ -3,22 +3,24 @@
 
 ---- FOR AOM ---- 
 
--- GET_PACKAGE_NAME_BY_MSISDN(MSISDN)                           1
+-- GET_PACKAGE_ID_BY_PACKAGE_NAME(PACKAGE_NAME)                 11
+-- GET_PACKAGE_INFO_BY_PACKAGE_ID(PACKAGE_ID)                   0
 -- GET_CUSTOMER_PASSWORD_BY_MSISDN                              1   
 -- GET_CUSTOMER_ID_BY_MAIL_AND_TCNO(EMAIL, TC_NO)               1
--- GET_MAX_CUSTOMER_ID                                          1
--- GET_MAX_BALANCE_ID                                           1
+-- GET_MAX_CUSTOMER_ID                                          11
+-- GET_MAX_BALANCE_ID                                           11
 -- CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO(EMAIL, TC_NO)         1
 
--- GET_CUSTOMER_INFO_BY_MSISDN(MSISDN)
--- GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN(MSISDN)
+-- GET_CUSTOMER_INFO_BY_MSISDN(MSISDN)                          11
+-- GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN(MSISDN)             1
 -- GET_CUSTOMER_INFO_PACKAGE_BY_MSISDN(MSISDN)                  1
+-- GET_PACKAGE_INFO_BY_MSISDN(MSISDN)                           1
 
--- UPDATE_CUSTOMER_PASSWORD(PASSWORD, EMAIL, TC_NO)             1
+-- UPDATE_CUSTOMER_PASSWORD(PASSWORD, EMAIL, TC_NO)             11
 
--- INSERT_NEW_CUSTOMER(CUST_ID, NAME, SURNAME, MSISDN, EMAIL,   1
+-- INSERT_NEW_CUSTOMER(CUST_ID, NAME, SURNAME, MSISDN, EMAIL,   11
     PASSWORD, SDATE, TC_NO) 
--- INSERT_BALANCE_TO_CUSTOMER(BALANCE_ID, CUST_ID, PACKAGE_ID,  1
+-- INSERT_BALANCE_TO_CUSTOMER(BALANCE_ID, CUST_ID, PACKAGE_ID,  11
     BAL_LVL_MINUTES, BAL_LVL_SMS, BAL_LVL_DATA, SDATE, EDATE)
 
 ------------------------------------------------------------------------
@@ -26,8 +28,8 @@
 
 ---- FOR CHF ---- 
 
--- GET_PACKAGE_NAME_BY_MSISDN(MSISDN)
--- GET_CUSTOMER_ID_BY_MSISDN(MSISDN)    
+-- GET_PACKAGE_NAME_BY_MSISDN(MSISDN)                                   0
+-- GET_CUSTOMER_ID_BY_MSISDN(MSISDN)                                    0
 -- GET_CUSTOMER_REMAINING_MINUTES_BY_MSISDN(MSISDN)                     1
 -- GET_CUSTOMER_REMAINING_SMS_BY_MSISDN(MSISDN)                         1
 -- GET_CUSTOMER_REMAINING_DATA_BY_MSISDN(MSISDN)                        1

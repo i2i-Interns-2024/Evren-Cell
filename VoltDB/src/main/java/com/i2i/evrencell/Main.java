@@ -18,8 +18,11 @@ public class Main {
         //voltdbOperator.updatePassword("buBenimYepyeniParolam", "john.doe@example.com","12345678901");
         //System.out.println(voltdbOperator.getCustomerIdByEmailAndTc("john.doe@example.com","12345678901"));
 
-        System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
+        //System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
 
+        //voltdbOperator.updateDataBalance(99,"5444444486");
+
+        System.out.println(voltdbOperator.getPackageInfoByPackageId(2));
 
         double endTime = System.currentTimeMillis();
         double elapsedTime = endTime - startTime;
