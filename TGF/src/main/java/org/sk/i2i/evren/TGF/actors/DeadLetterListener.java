@@ -4,14 +4,15 @@ import akka.actor.AbstractActor;
 import akka.actor.DeadLetter;
 import org.sk.i2i.evren.DataTransaction;
 import org.sk.i2i.evren.SmsTransaction;
-import org.sk.i2i.evren.TGF.DeadLetterStats;
+import org.sk.i2i.evren.TGF.constants.TransType;
+import org.sk.i2i.evren.TGF.management.StatsManager;
 import org.sk.i2i.evren.VoiceTransaction;
 
 public class DeadLetterListener extends AbstractActor {
-    DeadLetterStats deadLetterStats;
+    StatsManager statsManager;
 
-    public DeadLetterListener(DeadLetterStats deadLetterStats) {
-        this.deadLetterStats = deadLetterStats;
+    public DeadLetterListener(StatsManager statsManager) {
+        this.statsManager = statsManager;
     }
 
     @Override
@@ -20,11 +21,11 @@ public class DeadLetterListener extends AbstractActor {
                 .match(DeadLetter.class, deadLetter -> {
 
                     if(deadLetter.message() instanceof DataTransaction)
-                        deadLetterStats.incrementData();
+                        statsManager.incrementDeadCounter(TransType.DATA);
                     else if (deadLetter.message() instanceof VoiceTransaction)
-                        deadLetterStats.incrementVoice();
+                        statsManager.incrementDeadCounter(TransType.VOICE);
                     else if (deadLetter.message() instanceof SmsTransaction)
-                        deadLetterStats.incrementSms();
+                        statsManager.incrementDeadCounter(TransType.SMS);
 
                 }).build();
     }
