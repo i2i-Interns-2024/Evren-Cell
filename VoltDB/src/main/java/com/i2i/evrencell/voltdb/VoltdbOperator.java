@@ -134,7 +134,8 @@ public class VoltdbOperator {
 
     public VoltPackage getPackageByMsisdn(String msisdn) {
         try {
-            ClientResponse response = client.callProcedure("GET_PACKAGE_INFO_BY_MSISDN", msisdn);
+            Client client1 = getClient();
+            ClientResponse response = client1.callProcedure("GET_PACKAGE_INFO_BY_MSISDN", msisdn);
             VoltTable responseTable = response.getResults()[0];
             if (responseTable.advanceRow()) {
                 return new VoltPackage(
@@ -156,7 +157,8 @@ public class VoltdbOperator {
     }
 
     public Optional<VoltCustomer> getCustomerByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
-        ClientResponse response = client.callProcedure("GET_CUSTOMER_INFO_BY_MSISDN", msisdn);
+        Client client1 = getClient();
+        ClientResponse response = client1.callProcedure("GET_CUSTOMER_INFO_BY_MSISDN", msisdn);
 
         if (response.getStatus() == ClientResponse.SUCCESS) {
             VoltTable resultTable = response.getResults()[0];
@@ -178,16 +180,17 @@ public class VoltdbOperator {
                         .TCNumber(tcNo)
                         .build();
 
-                client.close();
+                client1.close();
                 return Optional.of(customer);
             }
         }
-        client.close();
+        client1.close();
         throw new RuntimeException("Customer not found with this MSISDN: " + msisdn);
     }
 
     public VoltCustomerBalance getRemainingCustomerBalanceByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
-        ClientResponse response = client.callProcedure("GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN", msisdn);
+        Client client1 = getClient();
+        ClientResponse response = client1.callProcedure("GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN", msisdn);
 
         if (response.getStatus() == ClientResponse.SUCCESS) {
             VoltTable resultTable = response.getResults()[0];
@@ -208,15 +211,16 @@ public class VoltdbOperator {
                         .edate(edate)
                         .build();
 
-                client.close();
+                client1.close();
                 return balanceResponse;
             }
         }
-        client.close();
+        client1.close();
         throw new RuntimeException("Customer balance not found for msisdn: " + msisdn);
     }
 
     public VoltPackageDetails getPackageInfoByPackageId(int packageId) throws IOException, ProcCallException, InterruptedException {
+        Client client1 = getClient();
         ClientResponse response = client.callProcedure("GET_PACKAGE_INFO_BY_PACKAGE_ID", packageId);
         if (response.getStatus() == ClientResponse.SUCCESS) {
             VoltTable resultTable = response.getResults()[0];
@@ -228,7 +232,7 @@ public class VoltdbOperator {
                 return new VoltPackageDetails(period, amountMinutes, amountSms, amountData);
             }
         }
-        client.close();
+        client1.close();
         throw new RuntimeException("Package not found with ID: " + packageId);
     }
 
