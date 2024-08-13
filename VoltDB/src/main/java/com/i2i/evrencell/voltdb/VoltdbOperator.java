@@ -93,7 +93,7 @@ public class VoltdbOperator {
         return handleProcedureAsString("GET_CUSTOMER_PASSWORD_BY_MSISDN", msisdn);
     }
 
-    public boolean checkCustomerExists(String email, String tc_no) {
+    public int checkCustomerExists(String email, String tc_no) {
         return handleProcedureCheck("CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO", email, tc_no);
     }
 
@@ -150,8 +150,8 @@ public class VoltdbOperator {
                 throw new RuntimeException("Error while getting package by Msisdn");
             }
         }catch (IOException | ProcCallException e) {
-            logger.error("Error while calling procedure: GET_CUSTOMER_INFO_PACKAGE_BY_MSISDN", e);
-            throw new RuntimeException("Error while calling procedure: GET_CUSTOMER_INFO_PACKAGE_BY_MSISDN", e);
+            logger.error("Error while calling procedure: GET_PACKAGE_INFO_BY_MSISDN", e);
+            throw new RuntimeException("Error while calling procedure: GET_PACKAGE_INFO_BY_MSISDN", e);
         }
     }
 
@@ -186,7 +186,51 @@ public class VoltdbOperator {
         throw new RuntimeException("Customer not found with this MSISDN: " + msisdn);
     }
 
+    public VoltCustomerBalance getRemainingCustomerBalanceByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
+        ClientResponse response = client.callProcedure("GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN", msisdn);
 
+        if (response.getStatus() == ClientResponse.SUCCESS) {
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                String msisdnResult = resultTable.getString("MSISDN");
+                int balanceData = (int) resultTable.getLong("BAL_LVL_DATA");
+                int balanceSms = (int) resultTable.getLong("BAL_LVL_SMS");
+                int balanceMinutes = (int) resultTable.getLong("BAL_LVL_MINUTES");
+                Timestamp sdate = resultTable.getTimestampAsSqlTimestamp("SDATE");
+                Timestamp edate = resultTable.getTimestampAsSqlTimestamp("EDATE");
+
+                VoltCustomerBalance balanceResponse = VoltCustomerBalance.builder()
+                        .msisdn(msisdnResult)
+                        .balanceData(balanceData)
+                        .balanceMinutes(balanceMinutes)
+                        .balanceSms(balanceSms)
+                        .sdate(sdate)
+                        .edate(edate)
+                        .build();
+
+                client.close();
+                return balanceResponse;
+            }
+        }
+        client.close();
+        throw new RuntimeException("Customer balance not found for msisdn: " + msisdn);
+    }
+
+    public VoltPackageDetails getPackageInfoByPackageId(int packageId) throws IOException, ProcCallException, InterruptedException {
+        ClientResponse response = client.callProcedure("GET_PACKAGE_INFO_BY_PACKAGE_ID", packageId);
+        if (response.getStatus() == ClientResponse.SUCCESS) {
+            VoltTable resultTable = response.getResults()[0];
+            if (resultTable.advanceRow()) {
+                int period = (int) resultTable.getLong("PERIOD");
+                int amountMinutes = (int) resultTable.getLong("AMOUNT_MINUTES");
+                int amountSms = (int) resultTable.getLong("AMOUNT_SMS");
+                int amountData = (int) resultTable.getLong("AMOUNT_DATA");
+                return new VoltPackageDetails(period, amountMinutes, amountSms, amountData);
+            }
+        }
+        client.close();
+        throw new RuntimeException("Package not found with ID: " + packageId);
+    }
 
 
 
@@ -337,22 +381,20 @@ public class VoltdbOperator {
         }
     }
 
-    private boolean handleProcedureCheck(String procedureName, String email, String tc_no) {
+    private int handleProcedureCheck(String procedureName, String email, String tc_no) {
         try {
             ClientResponse response = client.callProcedure(procedureName, email, tc_no);
             VoltTable resultTable = response.getResults()[0];
             if (resultTable.advanceRow()) {
-                long result = resultTable.getLong(0); // Veriyi long olarak alıyoruz
-                return result == 1; // Sonuç 1 ise true, değilse false döndürüyoruz
+                return (int) resultTable.getLong(0); // Cast long to int
             } else {
-                return false; // Tabloda sonuç çıkmıyorsa false döndür
+                throw new RuntimeException("No data returned from procedure");
             }
         } catch (IOException | ProcCallException e) {
             logger.error("Error while calling procedure: " + procedureName, e);
             throw new RuntimeException("Error while calling procedure: " + procedureName, e);
         }
     }
-
 
 
 

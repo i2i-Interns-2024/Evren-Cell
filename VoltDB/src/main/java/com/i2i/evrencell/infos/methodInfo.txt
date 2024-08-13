@@ -23,10 +23,18 @@ updateDataBalance(amount, msisdn);
 
 ---- FOR AOM ----
 
+checkCustomerExists(email, tc_no)
+
 getPackageName(msisdn)
--
--
--
--
+getCustomerPassword(msisdn)
+getCustomerIdByEmailAndTc(email, tc_no)
+getMaxCustomerId()
+getMaxBalanceId()
+getCustomerByMsisdn(msisdn)
+getCustomerByMsisdn(msisdn)
+getRemainingCustomerBalanceByMsisdn(msisdn)
 
+updatePassword(password, email, tc_no)
 
+insertCustomer(cust_id, name, surname, msisdn, email, password, sdate, tc_no)
+insertBalance(balance_id, cust_id, package_id, bal_lvl_minutes, bal_lvl_sms, bal_lvl_data, sdate, edate)
