@@ -22,6 +22,8 @@ public class Main {
 
         //voltdbOperator.updateDataBalance(99,"5444444486");
 
+        voltdbOperator.insertCustomer(87,"son1","son1","son1","son1","son",new Timestamp(System.currentTimeMillis()),"son1");
+        voltdbOperator.insertBalance(73,87,3,999,999,999,new Timestamp(System.currentTimeMillis()),new Timestamp(System.currentTimeMillis()));
         System.out.println(voltdbOperator.getPackageInfoByPackageId(2));
 
         double endTime = System.currentTimeMillis();
