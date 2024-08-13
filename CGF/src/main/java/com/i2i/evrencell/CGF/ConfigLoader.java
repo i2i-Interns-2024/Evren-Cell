@@ -11,6 +11,11 @@ public class ConfigLoader {
     }
 
     public static String getProperty(String key) {
+        String envKey = key.toUpperCase().replace('.', '_');
+        String envValue = System.getenv(envKey);
+        if (envValue != null) {
+            return envValue;
+        }
         return properties.getProperty(key);
     }
 
