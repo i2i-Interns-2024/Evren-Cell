@@ -16,8 +16,8 @@ public class VoltdbOperator {
     private Client client;
 
     public VoltdbOperator() {
-        this.ip = "34.132.46.242";
-        this.port = 32803;
+        this.ip = "35.234.92.15";
+        this.port = 32776;
         initializeClient();
     }
 
