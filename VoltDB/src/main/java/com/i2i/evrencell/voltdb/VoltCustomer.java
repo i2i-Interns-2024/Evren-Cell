@@ -1,15 +1,14 @@
 package com.i2i.evrencell.voltdb;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Date;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Getter
+@Setter
 public class VoltCustomer {
     private Integer customerId;
     private String msisdn;

@@ -1,9 +1,11 @@
 package com.i2i.evrencell.voltdb;
 
-import lombok.Builder;
+import lombok.*;
 
 import java.util.Date;
 
+@Setter
+@Getter
 @Builder
 public class VoltBalance {
     private Integer balanceId;
@@ -43,94 +45,6 @@ public class VoltBalance {
     }
 
     public VoltBalance() {}
-
-    public Integer getBalanceId() {
-        return balanceId;
-    }
-
-    public void setBalanceId(Integer balanceId) {
-        this.balanceId = balanceId;
-    }
-
-    public Integer getPackageId() {
-        return packageId;
-    }
-
-    public void setPackageId(Integer packageId) {
-        this.packageId = packageId;
-    }
-
-    public Integer getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
-
-    public Integer getPartitionId() {
-        return partitionId;
-    }
-
-    public void setPartitionId(Integer partitionId) {
-        this.partitionId = partitionId;
-    }
-
-    public Integer getBalanceLevelMinutes() {
-        return balanceLevelMinutes;
-    }
-
-    public void setBalanceLevelMinutes(Integer balanceLevelMinutes) {
-        this.balanceLevelMinutes = balanceLevelMinutes;
-    }
-
-    public Integer getBalanceLevelSMS() {
-        return balanceLevelSMS;
-    }
-
-    public void setBalanceLevelSMS(Integer balanceLevelSMS) {
-        this.balanceLevelSMS = balanceLevelSMS;
-    }
-
-    public Integer getBalanceLevelData() {
-        return balanceLevelData;
-    }
-
-    public void setBalanceLevelData(Integer balanceLevelData) {
-        this.balanceLevelData = balanceLevelData;
-    }
-
-    public Integer getBalanceLevelMoney() {
-        return balanceLevelMoney;
-    }
-
-    public void setBalanceLevelMoney(Integer balanceLevelMoney) {
-        this.balanceLevelMoney = balanceLevelMoney;
-    }
-
-    public Date getsDate() {
-        return sDate;
-    }
-
-    public void setsDate(Date sDate) {
-        this.sDate = sDate;
-    }
-
-    public Date geteDate() {
-        return eDate;
-    }
-
-    public void seteDate(Date eDate) {
-        this.eDate = eDate;
-    }
-
-    public long getPrice() {
-        return price;
-    }
-
-    public void setPrice(long price) {
-        this.price = price;
-    }
 
     @Override
     public String toString() {
