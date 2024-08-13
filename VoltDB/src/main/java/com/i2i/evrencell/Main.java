@@ -20,7 +20,12 @@ public class Main {
 
         //System.out.println(voltdbOperator.checkCustomerExists("john.doe@example.com","12345678901"));
 
-        voltdbOperator.updateDataBalance(1200,"5537030253");
+        voltdbOperator.updateDataBalance(1500,"5444444486");
+        voltdbOperator.updateSmsBalance(1500,"5444444486");
+        voltdbOperator.updateVoiceBalance(1500,"5444444486");
+        /*voltdbOperator.updateVoiceBalance(10,"haci");
+        voltdbOperator.updateSmsBalance(100,"haci");
+        voltdbOperator.updateDataBalance(100,"haci");*/
         /*voltdbOperator.updateVoiceBalance(620,"5537030253");
         voltdbOperator.updateSmsBalance(280,"5537030253");
 */
