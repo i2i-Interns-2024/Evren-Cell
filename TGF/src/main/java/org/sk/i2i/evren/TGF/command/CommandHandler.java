@@ -1,5 +1,6 @@
 package org.sk.i2i.evren.TGF.command;
 
+import org.sk.i2i.evren.DataTransaction;
 import org.sk.i2i.evren.TGF.constants.TransType;
 import org.sk.i2i.evren.TGF.management.DelayManager;
 import org.sk.i2i.evren.TGF.management.StatsManager;
@@ -48,6 +49,13 @@ public class CommandHandler {
                     threadManager.stopThreads();
                     sc.close();
                     break outer;
+                }
+                case "testRandom"    -> {  //print a DataTransaction to test hazelcast fetch
+                    System.out.println(new DataTransaction(
+                            RandomGenerator.randomMsisdn(),
+                            RandomGenerator.randomLocation(),
+                            RandomGenerator.randomDataUsage(),
+                            RandomGenerator.randomRatingGroup()));
                 }
                 default -> {
 
