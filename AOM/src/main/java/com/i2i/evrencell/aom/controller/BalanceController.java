@@ -1,7 +1,7 @@
 package com.i2i.evrencell.aom.controller;
 
-import com.i2i.evrencell.aom.dto.CustomerBalance;
 import com.i2i.evrencell.aom.service.BalanceService;
+import com.i2i.evrencell.voltdb.VoltCustomerBalance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.voltdb.client.ProcCallException;
@@ -23,7 +23,7 @@ public class BalanceController {
     }
 
     @GetMapping("/remainingBalance")
-    public ResponseEntity<CustomerBalance> getRemainingCustomerBalanceByMsisdn(@RequestParam String msisdn) throws IOException, InterruptedException, ProcCallException {
+    public ResponseEntity<VoltCustomerBalance> getRemainingCustomerBalanceByMsisdn(@RequestParam String msisdn) throws IOException, InterruptedException, ProcCallException {
         return ResponseEntity.ok(balanceService.getRemainingCustomerBalance(msisdn));
     }
 }

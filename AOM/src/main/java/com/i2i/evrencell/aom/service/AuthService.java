@@ -5,6 +5,7 @@ import com.i2i.evrencell.aom.exception.UnauthorizedException;
 import com.i2i.evrencell.aom.repository.CustomerRepository;
 import com.i2i.evrencell.aom.request.LoginCustomerRequest;
 import com.i2i.evrencell.aom.request.RegisterCustomerRequest;
+import org.i2i.hazelcast.utils.HazelcastMWOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,15 +22,19 @@ import java.sql.SQLException;
 public class AuthService {
 
     private final CustomerRepository customerRepository;
-    private final HazelcastService hazelcastService;
+//    private final HazelcastService hazelcastService;
     private final CustomerPasswordEncoder customerPasswordEncoder;
+//    private final HazelcastService hazelcastService;
 
     public AuthService(CustomerRepository customerRepository,
-                       HazelcastService hazelcastService,
-                       CustomerPasswordEncoder customerPasswordEncoder) {
+//                       HazelcastService hazelcastService,
+                       CustomerPasswordEncoder customerPasswordEncoder
+//                       HazelcastService hazelcastService
+    ) {
         this.customerRepository = customerRepository;
         this.customerPasswordEncoder = customerPasswordEncoder;
-        this.hazelcastService = hazelcastService;
+//        this.hazelcastService = hazelcastService;
+//        this.hazelcastService = hazelcastService;
     }
 
     /**
@@ -60,7 +65,7 @@ public class AuthService {
             return voltResponse;
         }
 
-        hazelcastService.put(registerCustomerRequest.msisdn(), registerCustomerRequest.msisdn());
+        HazelcastMWOperation.put(registerCustomerRequest.msisdn(), registerCustomerRequest.msisdn());
 
         return ResponseEntity.ok("Customer registered successfully in both Oracle and VoltDB");
     }
@@ -81,7 +86,7 @@ public class AuthService {
         if (isPasswordMatch) {
             return ResponseEntity.ok("Login successful");
         } else {
-            throw new UnauthorizedException("Invalid credentials please check your password or msisdn and try again.");
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
     }
 

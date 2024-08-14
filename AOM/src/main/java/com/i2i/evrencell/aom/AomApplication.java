@@ -12,7 +12,9 @@ public class AomApplication implements CommandLineRunner {
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
 
-    public AomApplication(OracleConnection oracleConnection, VoltDBConnection voltDBConnection) {
+    public AomApplication(OracleConnection oracleConnection,
+                          VoltDBConnection voltDBConnection
+    ) {
         this.oracleConnection = oracleConnection;
         this.voltDBConnection = voltDBConnection;
     }

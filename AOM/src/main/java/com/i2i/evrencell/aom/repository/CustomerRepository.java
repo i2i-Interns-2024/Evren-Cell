@@ -8,6 +8,7 @@ import com.i2i.evrencell.aom.helper.VoltDBConnection;
 import com.i2i.evrencell.aom.model.Customer;
 import com.i2i.evrencell.aom.request.CreateBalanceRequest;
 import com.i2i.evrencell.aom.request.RegisterCustomerRequest;
+import com.i2i.evrencell.voltdb.VoltdbOperator;
 import oracle.jdbc.OracleTypes;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -37,10 +38,12 @@ import java.util.logging.Logger;
  */
 @Repository
 public class CustomerRepository {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CustomerRepository.class);
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
     private final BalanceRepository balanceRepository;
     private final CustomerPasswordEncoder customerPasswordEncoder;
+    private final VoltdbOperator voltdbOperator = new VoltdbOperator();
     
     private static final Logger logger = Logger.getLogger(CustomerRepository.class.getName());
 
@@ -227,27 +230,6 @@ public class CustomerRepository {
     }
 
     /**
-     * This method is used to fetch the customer password by their MSISDN from the VoltDB.
-     * It calls a procedure in the VoltDB to get the password.
-     * If the customer exists in the VoltDB, it returns the encoded password.
-     * @param msisdn
-     * @return String
-     */
-    public String getEncodedCustomerPasswordByMsisdnFromVolt(String msisdn) throws IOException, ProcCallException, InterruptedException {
-        Client client = voltDBConnection.getClient();
-        ClientResponse response = client.callProcedure("GET_CUSTOMER_PASSWORD_BY_MSISDN", msisdn);
-        String encodedPassword = null;
-        if (response.getStatus() == ClientResponse.SUCCESS) {
-            VoltTable resultTable = response.getResults()[0];
-            if (resultTable.advanceRow()) {
-                encodedPassword = resultTable.getString("PASSWORD");
-            }
-        }
-        client.close();
-        return encodedPassword;
-    }
-
-    /**
      * This method is used to get a customer by their MSISDN.
      * @param email
      * @param tcNumber
@@ -292,47 +274,6 @@ public class CustomerRepository {
 
 
     // ==VOLT OPERATIONS==
-
-    /**
-     * This method is used to get a customer by their MSISDN.
-     * @param msisdn
-     * @return
-     * @throws IOException
-     * @throws ProcCallException
-     * @throws InterruptedException
-     */
-    public Optional<Customer> getCustomerByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
-        Client client = voltDBConnection.getClient();
-        ClientResponse response = client.callProcedure("GET_CUSTOMER_INFO_BY_MSISDN", msisdn);
-
-        if (response.getStatus() == ClientResponse.SUCCESS) {
-            VoltTable resultTable = response.getResults()[0];
-            if (resultTable.advanceRow()) {
-                Integer customerId = (int) resultTable.getLong("CUST_ID");
-                String name = resultTable.getString("NAME");
-                String surname = resultTable.getString("SURNAME");
-                String email = resultTable.getString("EMAIL");
-                Timestamp sdate = (resultTable.getTimestampAsSqlTimestamp("SDATE"));
-                String tcNo = resultTable.getString("TC_NO");
-
-                Customer customer = Customer.builder()
-                        .customerId(customerId)
-                        .msisdn(msisdn)
-                        .email(email)
-                        .name(name)
-                        .surname(surname)
-                        .sDate(sdate)
-                        .TCNumber(tcNo)
-                        .build();
-
-                client.close();
-                return Optional.of(customer);
-            }
-        }
-        client.close();
-        throw new NotFoundException("Customer not found with this MSISDN: " + msisdn);
-    }
-
     /**
      * This method is used to create a customer in the VoltDB.
      * @param registerCustomerRequest
@@ -342,27 +283,17 @@ public class CustomerRepository {
      * @throws InterruptedException
      */
     public ResponseEntity<String> createUserInVoltdb(RegisterCustomerRequest registerCustomerRequest) throws IOException, ProcCallException, InterruptedException {
-        Client client = voltDBConnection.getClient();
+//        Client client = voltDBConnection.getClient();
 
-        ClientResponse packageResponse = client.callProcedure("GET_PACKAGE_INFO_BY_PACKAGE_NAME", registerCustomerRequest.packageName());
-        VoltTable packageTable = packageResponse.getResults()[0];
-
-        if (!packageTable.advanceRow()) {
-            client.close();
-            return new ResponseEntity<>("Package not found IN VOLT", HttpStatus.NOT_FOUND);
-        }
-
-        int packageId = (int) packageTable.getLong("PACKAGE_ID");
-
-        ClientResponse maxIdResponse = client.callProcedure("GET_MAX_CUSTOMER_ID");
-        VoltTable maxIdTable = maxIdResponse.getResults()[0];
-        int maxCustomerId = 0;
-        if (maxIdTable.advanceRow()) {
-            maxCustomerId = (int) maxIdTable.getLong("MAX_CUST_ID");
-        }
+        logger.info("Creating customer in VoltDB");
+        int packageId = voltdbOperator.getPackageIdByName(registerCustomerRequest.packageName());
+        logger.info("Package ID: " + packageId);
+        int maxCustomerId = voltdbOperator.getMaxCustomerId();
+        logger.info("Max customer ID: " + maxCustomerId);
         int customerId = maxCustomerId + 1;
 
-        ClientResponse customerResponse = client.callProcedure("INSERT_NEW_CUSTOMER",
+        logger.info("Inserting customer in VoltDB");
+        voltdbOperator.insertCustomer(
                 customerId,
                 registerCustomerRequest.name(),
                 registerCustomerRequest.surname(),
@@ -372,72 +303,22 @@ public class CustomerRepository {
                 new Timestamp(System.currentTimeMillis()),
                 registerCustomerRequest.TCNumber()
         );
+        logger.info("Customer inserted in VoltDB");
 
-        VoltTable customerTable = customerResponse.getResults()[0];
-        if (!customerTable.advanceRow()) {
-            client.close();
-            return new ResponseEntity<>("Failed to create customer", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+        logger.info("Creating balance in VoltDB");
         CreateBalanceRequest createBalanceRequest = CreateBalanceRequest.builder()
                 .customerId(customerId)
                 .packageId(packageId)
                 .build();
 
-        ResponseEntity<String> balanceResponse = balanceRepository.createVoltBalance(createBalanceRequest);
+        //        client.close();
 
-        client.close();
-        return balanceResponse;
+        return balanceRepository.createVoltBalance(createBalanceRequest);
     }
 
 
-    /**
-     * This method is used to check if a customer exists in the VoltDB.
-     * @param email
-     * @param tcNumber
-     * @param encryptedPassword
-     * @throws IOException
-     * @throws ProcCallException
-     * @throws InterruptedException
-     */
-    public void updatePasswordInVoltDB(String email, String tcNumber, String encryptedPassword) throws
-            IOException,
-            ProcCallException,
-            InterruptedException {
-        Client client = voltDBConnection.getClient();
-        client.callProcedure("UPDATE_CUSTOMER_PASSWORD", encryptedPassword, email, tcNumber);
-        client.close();
-
-    }
-
-
-    /**
-     * This method is used to insert a notification log in the VoltDB after a password reset.
-     * @param notificationType
-     * @param notificationTime
-     * @param customerId
-     * @throws IOException
-     * @throws ProcCallException
-     * @throws InterruptedException
-     */
-    public void insertNotificationLogInVoltDB(String notificationType, Timestamp notificationTime, int customerId) throws
-            IOException,
-            ProcCallException,
-            InterruptedException {
-
-        Client client = voltDBConnection.getClient();
-        ClientResponse maxIdResponse = client.callProcedure("GET_MAX_NOTIFICATION_ID");
-        VoltTable maxIdTable = maxIdResponse.getResults()[0];
-        int maxNotificationId = 0;
-        if (maxIdTable.advanceRow()){
-            maxNotificationId = (int) maxIdTable.getLong("MAX_NOTIFICATION_ID");
-        }
-
-        int newNotificationId = maxNotificationId + 1;
-        client.callProcedure("INSERT_NOTIFICATION_LOG", newNotificationId, notificationType, notificationTime, customerId);
-//        client.callProcedure("InsertNotificationLog", newNotificationId, notificationType, notificationTime, customerId);
-        client.close();
-
+    public void updatePasswordInVoltDB(String email, String tcNumber, String encryptedPassword) throws IOException, InterruptedException, ProcCallException {
+        voltdbOperator.updatePassword(email, tcNumber, encryptedPassword);
     }
 
 
@@ -470,15 +351,5 @@ public class CustomerRepository {
         boolean ifCustomerExistsInOracle = oracleStatementReturnCount > 0;
         return ifCustomerExistsInOracle;
 
-        // Check if the customer exists in VoltDB
-//        Client voltClient = voltDBConnection.getClient();
-//        ClientResponse voltResponse = voltClient.callProcedure("CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO", email, tcNumber);
-//        VoltTable voltTable = voltResponse.getResults()[0];
-//        boolean ifCustomerExistsInVolt = false;
-//        if(voltTable.advanceRow()){
-//            ifCustomerExistsInVolt = voltTable.getLong(0) > 0;
-//        }
-//        voltClient.close();
-//        return ifCustomerExistsInOracle && ifCustomerExistsInVolt;
     }
 }

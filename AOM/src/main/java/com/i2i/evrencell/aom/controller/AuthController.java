@@ -3,6 +3,7 @@ package com.i2i.evrencell.aom.controller;
 import com.i2i.evrencell.aom.request.LoginCustomerRequest;
 import com.i2i.evrencell.aom.request.RegisterCustomerRequest;
 import com.i2i.evrencell.aom.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +28,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseEntity<String>> registerCustomer(@RequestBody RegisterCustomerRequest registerCustomerRequest)
-            throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
+    public ResponseEntity<ResponseEntity<String>> registerCustomer(@Valid @RequestBody RegisterCustomerRequest registerCustomerRequest)
+            throws SQLException, ClassNotFoundException, IOException, InterruptedException, ProcCallException {
         return ResponseEntity.ok(authService.registerCustomer(registerCustomerRequest));
     }
 

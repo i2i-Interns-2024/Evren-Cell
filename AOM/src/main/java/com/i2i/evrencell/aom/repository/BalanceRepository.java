@@ -5,6 +5,11 @@ import com.i2i.evrencell.aom.exception.NotFoundException;
 import com.i2i.evrencell.aom.helper.OracleConnection;
 import com.i2i.evrencell.aom.helper.VoltDBConnection;
 import com.i2i.evrencell.aom.request.CreateBalanceRequest;
+import com.i2i.evrencell.voltdb.VoltCustomerBalance;
+import com.i2i.evrencell.voltdb.VoltPackageDetails;
+import com.i2i.evrencell.voltdb.VoltdbOperator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -24,6 +29,8 @@ import java.sql.Types;
 public class BalanceRepository {
     private final OracleConnection oracleConnection;
     private final VoltDBConnection voltDBConnection;
+    private final VoltdbOperator voltdbOperator = new VoltdbOperator();
+    private final Logger logger = LoggerFactory.getLogger(BalanceRepository.class);
 
     public BalanceRepository(OracleConnection oracleConnection,
                              VoltDBConnection voltDBConnection) {
@@ -96,84 +103,32 @@ public class BalanceRepository {
      * @throws IOException
      * @throws ProcCallException
      */
-    public ResponseEntity<String> createVoltBalance(CreateBalanceRequest createBalanceRequest) throws IOException, ProcCallException {
-        Client client = voltDBConnection.getClient();
+    public ResponseEntity<String> createVoltBalance(CreateBalanceRequest createBalanceRequest) throws IOException, ProcCallException, InterruptedException {
 
-
-        ClientResponse packageResponse = client.callProcedure("GET_PACKAGE_INFO_BY_PACKAGE_ID", createBalanceRequest.packageId());
-        VoltTable packageTable = packageResponse.getResults()[0];
-
-        if (!packageTable.advanceRow()) {
-            throw new NotFoundException("Package not found in voltDb");
-        }
-
-        int amountMinutes = (int) packageTable.getLong("AMOUNT_MINUTES");
-        int amountSms = (int) packageTable.getLong("AMOUNT_SMS");
-        int amountData = (int) packageTable.getLong("AMOUNT_DATA");
-        int period = (int) packageTable.getLong("PERIOD");
+        logger.info("PACKAGE ID:  {}", createBalanceRequest.packageId());
+        VoltPackageDetails voltPackageDetails = voltdbOperator.getPackageInfoByPackageId(createBalanceRequest.packageId());
+        logger.info("VOLT PACKAGE DETAILS:  {}", voltPackageDetails.toString());
 
         Timestamp sdate = new Timestamp(System.currentTimeMillis());
-        Timestamp edate = new Timestamp(sdate.getTime() + period * 24L * 60L * 60L * 1000L);
+        Timestamp edate = new Timestamp(sdate.getTime() + voltPackageDetails.period() * 24L * 60L * 60L * 1000L);
 
-        ClientResponse maxIdResponse = client.callProcedure("GET_MAX_BALANCE_ID");
-        VoltTable maxIdTable = maxIdResponse.getResults()[0];
-        int maxBalanceId = 0;
-        if (maxIdTable.advanceRow()) {
-            maxBalanceId = (int) maxIdTable.getLong("MAX_BALANCE_ID");
-        }
+        int maxBalanceId  = voltdbOperator.getMaxBalanceId();
         int balanceId = maxBalanceId + 1;
 
-        client.callProcedure("INSERT_BALANCE_TO_CUSTOMER",
+        voltdbOperator.insertBalance(
                 balanceId,
                 createBalanceRequest.customerId(),
                 createBalanceRequest.packageId(),
-                amountMinutes,
-                amountSms,
-                amountData,
+                voltPackageDetails.amountMinutes(),
+                voltPackageDetails.amountSms(),
+                voltPackageDetails.amountData(),
                 sdate,
                 edate
         );
 
+        System.out.println("Balance created successfully in VOLTDB");
+
         return new ResponseEntity<>("Balance created successfully", HttpStatus.CREATED);
     }
 
-    /**
-     * Get remaining customer balance by msisdn
-     * This method gets remaining customer balance by msisdn from voltDb
-     * @param msisdn
-     * @return
-     * @throws IOException
-     * @throws ProcCallException
-     * @throws InterruptedException
-     */
-    public CustomerBalance getRemainingCustomerBalanceByMsisdn(String msisdn) throws IOException, ProcCallException, InterruptedException {
-        Client client = voltDBConnection.getClient();
-        ClientResponse response = client.callProcedure("GET_REMAINING_CUSTOMER_BALANCE_BY_MSISDN", msisdn);
-
-        if (response.getStatus() == ClientResponse.SUCCESS) {
-            VoltTable resultTable = response.getResults()[0];
-            if (resultTable.advanceRow()) {
-                String msisdnResult = resultTable.getString("MSISDN");
-                int balanceData = (int) resultTable.getLong("BAL_LVL_DATA");
-                int balanceSms = (int) resultTable.getLong("BAL_LVL_SMS");
-                int balanceMinutes = (int) resultTable.getLong("BAL_LVL_MINUTES");
-                Timestamp sdate = resultTable.getTimestampAsSqlTimestamp("SDATE");
-                Timestamp edate = resultTable.getTimestampAsSqlTimestamp("EDATE");
-
-                CustomerBalance balanceResponse = CustomerBalance.builder()
-                        .msisdn(msisdnResult)
-                        .balanceData(balanceData)
-                        .balanceMinutes(balanceMinutes)
-                        .balanceSms(balanceSms)
-                        .sdate(sdate)
-                        .edate(edate)
-                        .build();
-
-                client.close();
-                return balanceResponse;
-            }
-        }
-        client.close();
-        throw new NotFoundException("Customer balance not found for msisdn: " + msisdn);
-    }
 }

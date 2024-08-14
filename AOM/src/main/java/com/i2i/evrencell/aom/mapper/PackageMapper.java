@@ -1,13 +1,13 @@
 package com.i2i.evrencell.aom.mapper;
 
 import com.i2i.evrencell.aom.dto.PackageDto;
-import com.i2i.evrencell.voltdb.Package;
+import com.i2i.evrencell.voltdb.VoltPackage;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PackageMapper {
 
-    public PackageDto voltPackageToPackageDto(Package packageModel){
+    public PackageDto voltPackageToPackageDto(VoltPackage packageModel){
         return PackageDto.builder()
                 .packageId(packageModel.getPackageId())
                 .packageName(packageModel.getPackageName())

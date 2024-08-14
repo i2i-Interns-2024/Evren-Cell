@@ -1,7 +1,7 @@
 package com.i2i.evrencell.aom.service;
 
-import com.i2i.evrencell.aom.dto.CustomerBalance;
-import com.i2i.evrencell.aom.repository.BalanceRepository;
+import com.i2i.evrencell.voltdb.VoltCustomerBalance;
+import com.i2i.evrencell.voltdb.VoltdbOperator;
 import org.springframework.stereotype.Service;
 import org.voltdb.client.ProcCallException;
 
@@ -9,11 +9,7 @@ import java.io.IOException;
 
 @Service
 public class BalanceService {
-    private final BalanceRepository balanceRepository;
-
-    public BalanceService(BalanceRepository balanceRepository) {
-        this.balanceRepository = balanceRepository;
-    }
+    private final VoltdbOperator voltdbOperator = new VoltdbOperator();
 
     /**
      * This method is used to get the remaining customer balance by customer msisdn
@@ -23,7 +19,7 @@ public class BalanceService {
      * @throws InterruptedException
      * @throws ProcCallException
      */
-    public CustomerBalance getRemainingCustomerBalance(String msisdn) throws IOException, InterruptedException, ProcCallException {
-        return balanceRepository.getRemainingCustomerBalanceByMsisdn(msisdn);
+    public VoltCustomerBalance getRemainingCustomerBalance(String msisdn) throws IOException, InterruptedException, ProcCallException {
+        return voltdbOperator.getRemainingCustomerBalanceByMsisdn(msisdn);
     }
 }

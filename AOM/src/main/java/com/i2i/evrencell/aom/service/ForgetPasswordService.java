@@ -1,21 +1,20 @@
 package com.i2i.evrencell.aom.service;
 
 import com.i2i.evrencell.aom.encryption.CustomerPasswordEncoder;
-import com.i2i.evrencell.aom.exception.BadRequestException;
-import com.i2i.evrencell.aom.exception.NotFoundException;
 import com.i2i.evrencell.aom.helper.OracleConnection;
-import com.i2i.evrencell.aom.helper.VoltDBConnection;
+//import com.i2i.evrencell.aom.helper.VoltDBConnection;
 import com.i2i.evrencell.aom.repository.CustomerRepository;
 import com.i2i.evrencell.aom.request.ForgetPasswordRequest;
 import jakarta.mail.MessagingException;
+import jakarta.mail.SendFailedException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.voltdb.VoltTable;
-import org.voltdb.client.Client;
-import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
@@ -28,83 +27,60 @@ import java.sql.Types;
 
 @Service
 public class ForgetPasswordService {
+    private static final Logger log = LoggerFactory.getLogger(ForgetPasswordService.class);
     private final CustomerRepository customerRepository;
     private final CustomerPasswordEncoder customerPasswordEncoder;
     private final JavaMailSender javaMailSender;
-    private final VoltDBConnection voltDBConnection;
     private final OracleConnection oracleConnection;
 
     public ForgetPasswordService(CustomerRepository customerRepository,
                                  CustomerPasswordEncoder customerPasswordEncoder,
                                  JavaMailSender javaMailSender,
-                                 VoltDBConnection voltDBConnection,
                                  OracleConnection oracleConnection) {
         this.customerRepository = customerRepository;
         this.customerPasswordEncoder = customerPasswordEncoder;
         this.javaMailSender = javaMailSender;
-        this.voltDBConnection = voltDBConnection;
         this.oracleConnection = oracleConnection;
     }
-
-    /**
-     * This method is used to reset the password of a customer
-     * It first checks if the customer exists in the database
-     * If the customer exists, it generates a new password for the customer
-     * It then updates the password in both Oracle and VoltDB
-     * It retrieves the customer ID from both Oracle and VoltDB
-     * It inserts a notification log in both Oracle and VoltDB
-     * It sends an email to the customer with the new password
-     * @param request
-     * @return String
-     */
-//    public ResponseEntity<String> forgetPassword(ForgetPasswordRequest request) {
-//        try {
-//            if (!checkCustomerExists(request.email(), request.TCNumber())) {
-//                throw new NotFoundException("Customer does not exist");
-//            }
-//
-//            String newPassword = generateRandomPassword();
-//            String encryptedPassword = customerPasswordEncoder.encrypt(newPassword);
-//
-//            updatePassword(request.email(), request.TCNumber(), encryptedPassword);
-//
-//            int customerIdOracle = retrieveCustomerIdFromOracle(request.email(), request.TCNumber());
-//            int customerIdVolt = retrieveCustomerIdFromVoltDB(request.email(), request.TCNumber());
-//
-//            insertNotificationLogs(new Timestamp(System.currentTimeMillis()), customerIdOracle, customerIdVolt);
-//
-//            sendEmail(request.email(), newPassword);
-//
-//            return ResponseEntity.ok("Please check your mail address.");
-//        } catch (SQLException | ClassNotFoundException | IOException | ProcCallException | InterruptedException | MessagingException e) {
-//            e.printStackTrace();
-//            throw new BadRequestException("Error occurred while resetting password");
-//        }
-//    }
 
     public ResponseEntity<String> forgetPassword(ForgetPasswordRequest request) {
         try {
             if (!checkCustomerExists(request.email(), request.TCNumber())) {
-                throw new NotFoundException("Customer does not exist");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer does not exist");
             }
 
             String newPassword = generateRandomPassword();
             String encryptedPassword = customerPasswordEncoder.encrypt(newPassword);
 
-            updatePassword(request.email(), request.TCNumber(), encryptedPassword);
+            try {
+                sendEmail(request.email(), newPassword);
+            } catch (SendFailedException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to send email");
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error occurred while sending email");
+            }
+
+            try {
+                updatePassword(request.email(), request.TCNumber(), encryptedPassword);
+            } catch (SQLException | ClassNotFoundException | IOException | ProcCallException | InterruptedException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error occurred while resetting password");
+            }
 
             int customerIdOracle = retrieveCustomerIdFromOracle(request.email(), request.TCNumber());
-//            int customerIdVolt = retrieveCustomerIdFromVoltDB(request.email(), request.TCNumber());
-
-//            insertNotificationLogs(new Timestamp(System.currentTimeMillis()), customerIdOracle, customerIdVolt);
-            insertNotificationLogs(new Timestamp(System.currentTimeMillis()), customerIdOracle);
-
-            sendEmail(request.email(), newPassword);
+            try {
+                insertNotificationLogs(new Timestamp(System.currentTimeMillis()), customerIdOracle);
+            } catch (SQLException | ClassNotFoundException | IOException | ProcCallException | InterruptedException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error occurred while inserting notification logs");
+            }
 
             return ResponseEntity.ok("Please check your mail address.");
-        } catch (SQLException | ClassNotFoundException | IOException | ProcCallException | InterruptedException | MessagingException e) {
+        } catch (SQLException | ClassNotFoundException | IOException | ProcCallException | InterruptedException e) {
             e.printStackTrace();
-            throw new BadRequestException("Error occurred while resetting password");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error occurred while resetting password");
         }
     }
 
@@ -136,7 +112,9 @@ public class ForgetPasswordService {
      */
     private void updatePassword(String email, String tcNumber, String encryptedPassword) throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
         customerRepository.updatePasswordInOracle(email, tcNumber, encryptedPassword);
-//        customerRepository.updatePasswordInVoltDB(email, tcNumber, encryptedPassword);
+        log.info("Password updated successfully oracle");
+        customerRepository.updatePasswordInVoltDB(email, tcNumber, encryptedPassword);
+        log.info("Password updated successfully volt");
     }
 
     /**
@@ -187,28 +165,6 @@ public class ForgetPasswordService {
     }
 
     /**
-     * This method retrieves the customer ID from VoltDB to be used in the notification log
-     *
-     * @param email
-     * @param tcNumber
-     * @return int
-     * @throws IOException
-     * @throws ProcCallException
-     * @throws InterruptedException
-     */
-    private int retrieveCustomerIdFromVoltDB(String email, String tcNumber) throws IOException, ProcCallException, InterruptedException {
-        Client voltClient = voltDBConnection.getClient();
-        ClientResponse voltResponse = voltClient.callProcedure("GET_CUSTOMER_ID_BY_MAIL_AND_TCNO", email, tcNumber);
-        VoltTable voltTable = voltResponse.getResults()[0];
-        int customerId = 0;
-        if (voltTable.advanceRow()) {
-            customerId = (int) voltTable.getLong("CUST_ID");
-        }
-        voltClient.close();
-        return customerId;
-    }
-
-    /**
      * This method inserts a notification log in both Oracle and VoltDB
      *
      * @param notificationTime
@@ -220,12 +176,6 @@ public class ForgetPasswordService {
      * @throws ProcCallException
      * @throws InterruptedException
      */
-//    private void insertNotificationLogs(Timestamp notificationTime, int customerIdOracle, int customerIdVolt)
-//            throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
-//        customerRepository.insertNotificationLogInOracle("Password Reset", notificationTime, customerIdOracle);
-////        customerRepository.insertNotificationLogInVoltDB("Password Reset", notificationTime, customerIdVolt);
-//    }
-//
     private void insertNotificationLogs(Timestamp notificationTime, int customerIdOracle)
             throws SQLException, ClassNotFoundException, IOException, ProcCallException, InterruptedException {
         customerRepository.insertNotificationLogInOracle("Password Reset", notificationTime, customerIdOracle);

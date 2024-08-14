@@ -2,8 +2,9 @@ package com.i2i.evrencell.aom.service;
 
 import com.i2i.evrencell.aom.dto.CustomerDto;
 import com.i2i.evrencell.aom.mapper.CustomerMapper;
-import com.i2i.evrencell.aom.model.Customer;
 import com.i2i.evrencell.aom.repository.CustomerRepository;
+import com.i2i.evrencell.voltdb.VoltCustomer;
+import com.i2i.evrencell.voltdb.VoltdbOperator;
 import org.springframework.stereotype.Service;
 import org.voltdb.client.ProcCallException;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final VoltdbOperator voltdbOperator = new VoltdbOperator();
 
     public CustomerService(CustomerRepository customerRepository, CustomerMapper customerMapper) {
         this.customerRepository = customerRepository;
@@ -30,9 +32,10 @@ public class CustomerService {
      * @throws ProcCallException
      */
     public CustomerDto getCustomerByMsisdn(String msisdn) throws IOException, InterruptedException, ProcCallException {
-        Customer customer = customerRepository.getCustomerByMsisdn(msisdn)
-                .orElseThrow(() -> new RuntimeException("Customer cannot find by msisdn"));
-        return customerMapper.customerToCustomerDto(customer);
+
+        VoltCustomer voltCustomer = voltdbOperator.getCustomerByMsisdn(msisdn)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        return customerMapper.voltCustomerBalanceToCustomerDto(voltCustomer);
     }
 
     /**
