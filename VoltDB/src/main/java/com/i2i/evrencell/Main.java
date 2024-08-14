@@ -10,9 +10,17 @@ public class Main {
         double startTime = System.currentTimeMillis();
         VoltdbOperator voltdbOperator = new VoltdbOperator();
 
-        System.out.println(voltdbOperator.getSmsBalance("5551234567"));
-        System.out.println(voltdbOperator.getVoiceBalance("5551234567"));
-        System.out.println(voltdbOperator.getDataBalance("5551234567"));
+        for (int i = 0; i < 10; i++) {
+            System.out.println(voltdbOperator.getSmsBalance("5551234567"));
+            System.out.println(voltdbOperator.getVoiceBalance("5551234567"));
+            System.out.println(voltdbOperator.getDataBalance("5551234567"));
+            System.out.println(voltdbOperator.getCustomerIdByEmailAndTc("john.doe@example.com", "12345678901"));
+            System.out.println(voltdbOperator.getLastName("5551234567"));
+            System.out.println(voltdbOperator.getMaxBalanceId());
+            System.out.println(voltdbOperator.getMaxCustomerId());
+        }
+
+
 
         voltdbOperator.close();
 
