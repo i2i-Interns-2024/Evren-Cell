@@ -14,11 +14,6 @@ public class ABMF {
     private static final Logger logger = LogManager.getLogger(ABMF.class);
 
     public static void main(String[] args) throws SQLException {
-        String oracleUrl = ConfigLoader.getProperty("oracle.url");
-        String oracleUserName = ConfigLoader.getProperty("oracle.username");
-        String oraclePassword = ConfigLoader.getProperty("oracle.password");
-
-        OracleOperations oracleOperations = new OracleOperations(oracleUrl, oracleUserName, oraclePassword);
 
         Subscriber<BalanceMessage> subscriber = new Subscriber<BalanceMessage>();
 
@@ -28,8 +23,8 @@ public class ABMF {
             ConsumerRecords<String, BalanceMessage> records = subscriber.poll();
             for (ConsumerRecord<String, BalanceMessage> record : records) {
                 BalanceMessage message = record.value();
+                OracleOperations.updateUserBalance(message);
                 logBalanceMessage(message);
-                oracleOperations.updateUserBalance(message);
             }
         }
 

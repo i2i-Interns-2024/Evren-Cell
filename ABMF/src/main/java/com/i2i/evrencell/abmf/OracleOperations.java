@@ -2,20 +2,16 @@ package com.i2i.evrencell.abmf;
 
 import com.i2i.evrencell.kafka.message.BalanceMessage;
 
+import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class OracleOperations {
 
-    private Connection connection;
+    private static final DataSource dataSource = DataSourceConfig.getDataSource();
 
-    public OracleOperations(String url, String userName, String password) throws SQLException {
-        this.connection = DriverManager.getConnection(url, userName, password);
-    }
-
-    public void updateUserBalance(BalanceMessage balanceMessage) {
+    public static void updateUserBalance(BalanceMessage balanceMessage) {
         String procedureCall = "";
 
         switch (balanceMessage.getType()) {
@@ -30,7 +26,7 @@ public class OracleOperations {
                 break;
         }
 
-        try {
+        try (Connection connection = dataSource.getConnection();) {
             CallableStatement callableStatement = connection.prepareCall(procedureCall);
 
             callableStatement.setString(1, balanceMessage.getMsisdn());
