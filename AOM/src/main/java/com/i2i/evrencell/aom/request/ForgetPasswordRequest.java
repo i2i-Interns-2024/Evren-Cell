@@ -2,6 +2,7 @@ package com.i2i.evrencell.aom.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
@@ -14,6 +15,7 @@ public record ForgetPasswordRequest(
         @NotNull(message = "TCNumber cannot be null")
         @NotBlank(message = "TCNumber cannot be blank")
         @Size(min = 11, max = 11, message = "TCNumber must be 11 characters")
+        @Pattern(regexp = "\\d{11}", message = "TCNumber must contain only digits")
         String  TCNumber
 ) {
 }
