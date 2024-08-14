@@ -4,7 +4,7 @@ import com.i2i.evrencell.aom.dto.PackageDetails;
 import com.i2i.evrencell.aom.dto.PackageDto;
 import com.i2i.evrencell.aom.mapper.PackageMapper;
 import com.i2i.evrencell.aom.repository.PackageRepository;
-import com.i2i.evrencell.voltdb.Package;
+import com.i2i.evrencell.voltdb.VoltPackage;
 import org.springframework.stereotype.Service;
 import org.voltdb.client.ProcCallException;
 
@@ -37,7 +37,7 @@ public class PackageService {
 
     public PackageDto getUserPackageByMsisdn(String msisdn){
         try {
-            Package packageModel = packageRepository.getUserPackageByMsisdn(msisdn);
+            VoltPackage packageModel = packageRepository.getUserPackageByMsisdn(msisdn);
             return packageMapper.voltPackageToPackageDto(packageModel);
 
         }catch (IOException | ProcCallException exception){

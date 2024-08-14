@@ -52,26 +52,32 @@
             <version>19.3.0.0</version>
         </dependency>
 
-        <!--        VOLTDB      -->
-        <dependency>
-            <groupId>org.voltdb</groupId>
-            <artifactId>voltdbclient</artifactId>
-            <version>13.2.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.voltdb</groupId>
-            <artifactId>voltdb</artifactId>
-            <version>10.0</version>
-        </dependency>
+<!--        &lt;!&ndash;        VOLTDB      &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.voltdb</groupId>-->
+<!--            <artifactId>voltdbclient</artifactId>-->
+<!--            <version>13.2.2</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.voltdb</groupId>-->
+<!--            <artifactId>voltdb</artifactId>-->
+<!--            <version>10.0</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>com.i2i.evrencell</groupId>
             <artifactId>VoltDB</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/VoltDB.jar</systemPath>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.i2i.hazelcast.utils</groupId>
+            <artifactId>hazelcast_operations</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
 
 
         <!--        LOMBOK      -->
@@ -83,11 +89,11 @@
 
 
         <!--        HAZELCAST   -->
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>5.5.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.hazelcast</groupId>-->
+<!--            <artifactId>hazelcast</artifactId>-->
+<!--            <version>5.5.0</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -145,6 +151,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <mainClass>com.i2i.evrencell.aom.AomApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -152,6 +159,24 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

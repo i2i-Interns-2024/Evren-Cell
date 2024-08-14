@@ -5,7 +5,7 @@ import com.i2i.evrencell.aom.exception.NotFoundException;
 import com.i2i.evrencell.aom.helper.OracleConnection;
 import com.i2i.evrencell.aom.helper.VoltDBConnection;
 import com.i2i.evrencell.aom.mapper.PackageMapper;
-import com.i2i.evrencell.voltdb.Package;
+import com.i2i.evrencell.voltdb.VoltPackage;
 import oracle.jdbc.OracleTypes;
 import org.springframework.stereotype.Repository;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
@@ -87,7 +87,7 @@ public class PackageRepository {
      * @throws IOException
      * @throws ProcCallException
      */
-    public com.i2i.evrencell.voltdb.Package getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
+    public VoltPackage getUserPackageByMsisdn(String msisdn) throws IOException, ProcCallException {
         return voltdbOperator.getPackageByMsisdn(msisdn);
     }
 

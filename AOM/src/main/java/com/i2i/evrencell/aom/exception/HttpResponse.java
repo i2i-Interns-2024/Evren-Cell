@@ -14,17 +14,17 @@ import java.util.Date;
 public class HttpResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss", timezone = "Turkey")
     private Date timeStamp;
-    private int httpStatusCode;
+    private int statusCodeValue;
     private HttpStatus httpStatus;
     private String reason;
     private String message;
 
-    public HttpResponse(int httpStatusCode,
+    public HttpResponse(int statusCodeValue,
                         HttpStatus httpStatus,
                         String reason,
                         String message) {
         this.timeStamp = new Date();
-        this.httpStatusCode = httpStatusCode;
+        this.statusCodeValue = statusCodeValue;
         this.httpStatus = httpStatus;
         this.reason = reason;
         this.message = message;

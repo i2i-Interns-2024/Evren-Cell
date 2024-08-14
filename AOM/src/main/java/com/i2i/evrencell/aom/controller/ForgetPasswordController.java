@@ -3,6 +3,7 @@ package com.i2i.evrencell.aom.controller;
 import com.i2i.evrencell.aom.request.ForgetPasswordRequest;
 import com.i2i.evrencell.aom.service.ForgetPasswordService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +34,7 @@ public class ForgetPasswordController {
 //    }
 
     @PostMapping("/reset")
-    public ResponseEntity<ResponseEntity<String>> resetPassword(@RequestBody ForgetPasswordRequest forgetPasswordRequest) throws SQLException, IOException, ClassNotFoundException, InterruptedException, ProcCallException, MessagingException {
+    public ResponseEntity<ResponseEntity<String>> resetPassword(@Valid @RequestBody ForgetPasswordRequest forgetPasswordRequest) {
         return ResponseEntity.ok(forgetPasswordService.forgetPassword(forgetPasswordRequest));
     }
 }
