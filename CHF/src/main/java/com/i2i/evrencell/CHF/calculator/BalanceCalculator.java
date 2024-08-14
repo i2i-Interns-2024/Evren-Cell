@@ -24,14 +24,14 @@ public class BalanceCalculator {
     }
 
     public void calculateVoiceRequest(VoiceTransaction voiceMessage) {
-        processRequest(BalanceType.VOICE, voiceMessage.getCallerMsisdn(), voiceMessage.getDuration());
+        processRequest(BalanceType.VOICE, voiceMessage.getCallerMsisdn(), voiceMessage.getDuration(), voiceMessage.getCalleeMsisdn());
     }
 
     public void calculateSmsRequest(SmsTransaction smsMessage) {
-        processRequest(BalanceType.SMS, smsMessage.getSenderMsisdn(), 1);
+        processRequest(BalanceType.SMS, smsMessage.getSenderMsisdn(), 1, smsMessage.getReceiverMsisdn());
     }
 
-    private void processRequest(BalanceType type, String msisdn, int usage) {
+    private void processRequest(BalanceType type, String msisdn, int usage, String... otherMsisdn) {
         int userBalance = switch (type) {
             case DATA -> getUserDataBalance(msisdn);
             case VOICE -> getUserVoiceBalance(msisdn);
@@ -41,7 +41,7 @@ public class BalanceCalculator {
 
         if (userBalance >= usage) {
             int updatedBalance = userBalance - usage;
-            updateUserBalance(type, msisdn, updatedBalance);
+            updateUserBalance(type, msisdn, updatedBalance, otherMsisdn);
             sendUpdatedBalanceMessage(type, msisdn, updatedBalance);
             checkUsageThreshold(type, msisdn, updatedBalance);
 
@@ -66,7 +66,7 @@ public class BalanceCalculator {
         return voltdbOperator.getSmsBalance(msisdn);
     }
 
-    private void updateUserBalance(BalanceType type, String msisdn, int updatedBalance) {
+    private void updateUserBalance(BalanceType type, String msisdn, int updatedBalance, String... otherMsisdn) {
         switch (type) {
             case DATA:
                 voltdbOperator.updateDataBalance(updatedBalance, msisdn);
@@ -74,11 +74,11 @@ public class BalanceCalculator {
                 break;
             case VOICE:
                 voltdbOperator.updateVoiceBalance(updatedBalance, msisdn);
-                sendUsageRecordMessage(type, msisdn, null, updatedBalance, new Timestamp(System.currentTimeMillis()));
+                sendUsageRecordMessage(type, msisdn, otherMsisdn[0], updatedBalance, new Timestamp(System.currentTimeMillis()));
                 break;
             case SMS:
                 voltdbOperator.updateSmsBalance(updatedBalance, msisdn);
-                sendUsageRecordMessage(type, msisdn, null, updatedBalance, new Timestamp(System.currentTimeMillis()));
+                sendUsageRecordMessage(type, msisdn, otherMsisdn[0], updatedBalance, new Timestamp(System.currentTimeMillis()));
                 break;
         }
     }
