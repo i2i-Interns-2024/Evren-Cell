@@ -4,11 +4,11 @@ import org.sk.i2i.evren.TGF.constants.TransType;
 
 public class DelayManager {
 
-    private long voiceDelay;
-    private long dataDelay;
-    private long smsDelay;
+    private int voiceDelay;
+    private int dataDelay;
+    private int smsDelay;
 
-    public DelayManager(long voiceDelay, long dataDelay, long smsDelay) {
+    public DelayManager(int voiceDelay, int dataDelay, int smsDelay) {
         this.voiceDelay = voiceDelay;
         this.dataDelay = dataDelay;
         this.smsDelay = smsDelay;
@@ -22,31 +22,31 @@ public class DelayManager {
         );
     }
 
-    public long getVoiceDelay() {
+    public int getVoiceDelay() {
         return voiceDelay;
     }
 
-    public void setVoiceDelay(long voiceDelay) {
+    public void setVoiceDelay(int voiceDelay) {
         this.voiceDelay = voiceDelay;
     }
 
-    public long getDataDelay() {
+    public int getDataDelay() {
         return dataDelay;
     }
 
-    public void setDataDelay(long dataDelay) {
+    public void setDataDelay(int dataDelay) {
         this.dataDelay = dataDelay;
     }
 
-    public long getSmsDelay() {
+    public int getSmsDelay() {
         return smsDelay;
     }
 
-    public void setSmsDelay(long smsDelay) {
+    public void setSmsDelay(int smsDelay) {
         this.smsDelay = smsDelay;
     }
 
-    public long getDelay(TransType type) {
+    public int getDelay(TransType type) {
         switch (type) {
             case DATA -> {
                 return getDataDelay();
@@ -61,7 +61,7 @@ public class DelayManager {
         return -1;
     }
 
-    public void setDelayAll(long delay) {
+    public void setDelayAll(int delay) {
         setSmsDelay(delay);
         setDataDelay(delay);
         setVoiceDelay(delay);

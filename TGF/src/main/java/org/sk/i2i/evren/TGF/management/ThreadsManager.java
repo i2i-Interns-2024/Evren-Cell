@@ -39,9 +39,9 @@ public class ThreadsManager {
         smsThread = new Thread(smsGenerator);
 
         voiceThread.start();
-        Clock.delay(1500000L); //1.5ms
+        Clock.delay(400);
         dataThread.start();
-        Clock.delay(1500000L); //1.5ms
+        Clock.delay(700);
         smsThread.start();
 
         System.out.println("Transaction generator started...");

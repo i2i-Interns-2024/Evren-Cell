@@ -26,9 +26,6 @@ public class CommandHandler {
 
     public void startCommander() {
 
-        //counts unrecognized commands, stop threads after 3
-        int stopCounter =  0;
-
         outer:
         while(true) {
 
@@ -43,18 +40,13 @@ public class CommandHandler {
                 case "setDelayVoice" -> updateDelay(TransType.VOICE);
                 case "setDelayData"  -> updateDelay(TransType.DATA);
                 case "setDelaySms"   -> updateDelay(TransType.SMS);
+                case "setTps"        -> setDelayByTps();
                 case "printDelay"    -> delayManager.printDelay();
                 case "printStats"    -> statsManager.printStats();
                 case "resetStats"    -> statsManager.resetStats();
                 case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the list of msisdn from Hazelcast
                 case "testRandom"    -> printTransTest();               //print a random transaction to test values
-                default -> {
-                    stopCounter++;
-                    if(stopCounter > 3)
-                        threadManager.stopThreads();
-                    else
-                        System.out.println("unrecognized command...");
-                }
+                default -> System.out.println("unrecognized command...");
             }
         }
 
@@ -62,11 +54,28 @@ public class CommandHandler {
         sc.close();
     }
 
+    private void setDelayByTps() {
+
+        try {
+            System.out.println("enter tps value:");
+
+            float tpmPerGenerator = sc.nextFloat() / 3;
+
+            int delay = Math.round(1000 / tpmPerGenerator);
+
+            delayManager.setDelayAll(delay);
+
+        } catch (InputMismatchException e) {
+            System.out.println("unsupported input format...");
+        }
+
+    }
+
     private void updateDelay(TransType type) {
 
         try {
             System.out.println("enter delay value:");
-            long delay = sc.nextLong();
+            int delay = sc.nextInt();
 
             switch (type) {
                 case DATA -> delayManager.setDataDelay(delay);
@@ -83,7 +92,7 @@ public class CommandHandler {
 
         try {
             System.out.println("enter delay value:");
-            long delay = sc.nextLong();
+            int delay = sc.nextInt();
             delayManager.setDelayAll(delay);
 
         } catch (InputMismatchException e) {
