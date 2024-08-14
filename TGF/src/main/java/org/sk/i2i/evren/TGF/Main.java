@@ -33,6 +33,7 @@ public class Main {
         TrafficGenerator data = new TrafficGenerator(TransType.DATA, actor, statsManager, delayManager);
         TrafficGenerator sms = new TrafficGenerator(TransType.SMS, actor, statsManager, delayManager);
 
+        //manages starting and stopping of threads
         ThreadsManager threadsManager = new ThreadsManager(voice, data, sms);
 
         //run the main loop

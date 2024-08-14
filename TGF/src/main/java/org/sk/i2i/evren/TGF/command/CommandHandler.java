@@ -26,6 +26,7 @@ public class CommandHandler {
 
     public void startCommander() {
 
+        //counts unrecognized commands, stop threads after 3
         int stopCounter =  0;
 
         outer:
@@ -35,8 +36,9 @@ public class CommandHandler {
             String input = sc.nextLine();
 
             switch (input) {
-                case "start" -> threadManager.startThreads();
+                case "start"         -> threadManager.startThreads();
                 case "stop"          -> threadManager.stopThreads();
+                case "terminate"     -> { break outer; }
                 case "setDelay"      -> updateDelayAll();
                 case "setDelayVoice" -> updateDelay(TransType.VOICE);
                 case "setDelayData"  -> updateDelay(TransType.DATA);
@@ -44,21 +46,9 @@ public class CommandHandler {
                 case "printDelay"    -> delayManager.printDelay();
                 case "printStats"    -> statsManager.printStats();
                 case "resetStats"    -> statsManager.resetStats();
-                case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the set of msisdn from Hazelcast
-                case "terminate"     -> {
-                    threadManager.stopThreads();
-                    sc.close();
-                    break outer;
-                }
-                case "testRandom"    -> {  //print a DataTransaction to test hazelcast fetch
-                    System.out.println(new DataTransaction(
-                            RandomGenerator.randomMsisdn(),
-                            RandomGenerator.randomLocation(),
-                            RandomGenerator.randomDataUsage(),
-                            RandomGenerator.randomRatingGroup()));
-                }
+                case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the list of msisdn from Hazelcast
+                case "testRandom"    -> printTransTest();               //print a random transaction to test values
                 default -> {
-
                     stopCounter++;
                     if(stopCounter > 3)
                         threadManager.stopThreads();
@@ -68,19 +58,20 @@ public class CommandHandler {
             }
         }
 
+        threadManager.stopThreads();
+        sc.close();
     }
 
     private void updateDelay(TransType type) {
 
         try {
             System.out.println("enter delay value:");
+            long delay = sc.nextLong();
 
             switch (type) {
-                case DATA -> delayManager.setDataDelay(sc.nextLong());
-
-                case VOICE -> delayManager.setVoiceDelay(sc.nextLong());
-
-                case SMS -> delayManager.setSmsDelay(sc.nextLong());
+                case DATA -> delayManager.setDataDelay(delay);
+                case VOICE -> delayManager.setVoiceDelay(delay);
+                case SMS -> delayManager.setSmsDelay(delay);
             }
 
         } catch (InputMismatchException e) {
@@ -98,6 +89,14 @@ public class CommandHandler {
         } catch (InputMismatchException e) {
             System.out.println("unsupported input format...");
         }
+    }
+
+    private void printTransTest() {
+        System.out.println(new DataTransaction(
+                RandomGenerator.randomMsisdn(),
+                RandomGenerator.randomLocation(),
+                RandomGenerator.randomDataUsage(),
+                RandomGenerator.randomRatingGroup()));
     }
 
 }

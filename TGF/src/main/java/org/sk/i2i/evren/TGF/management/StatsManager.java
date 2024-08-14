@@ -1,7 +1,6 @@
 package org.sk.i2i.evren.TGF.management;
 
 import org.sk.i2i.evren.TGF.constants.TransType;
-
 import java.util.HashMap;
 
 public class StatsManager {
