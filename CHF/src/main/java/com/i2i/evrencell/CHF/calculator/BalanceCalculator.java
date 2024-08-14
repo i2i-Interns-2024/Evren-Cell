@@ -43,7 +43,8 @@ public class BalanceCalculator {
             int updatedBalance = userBalance - usage;
             updateUserBalance(type, msisdn, updatedBalance, otherMsisdn);
             sendUpdatedBalanceMessage(type, msisdn, updatedBalance);
-            checkUsageThreshold(type, msisdn, updatedBalance);
+            //TODO Notification bozuk amk
+            //checkUsageThreshold(type, msisdn, updatedBalance);
 
         } else {
             insufficientBalance(type, msisdn);
@@ -86,29 +87,31 @@ public class BalanceCalculator {
     private void checkUsageThreshold(BalanceType type, String msisdn, int currentBalance) {
         int packageBalance;
         int threshold80;
-        int threshold100 = 0;
         switch (type) {
             case DATA:
-                packageBalance = voltdbOperator.getDataBalance(msisdn);
+                packageBalance = voltdbOperator.getPackageDataBalance(msisdn);
                 threshold80 = (int) (packageBalance * 0.20);
                 break;
             case SMS:
-                packageBalance = voltdbOperator.getSmsBalance(msisdn);
+                packageBalance = voltdbOperator.getPackageSmsBalance(msisdn);
                 threshold80 = (int) (packageBalance * 0.20);
                 break;
             case VOICE:
-                packageBalance = voltdbOperator.getVoiceBalance(msisdn);
+                packageBalance = voltdbOperator.getPackageVoiceBalance(msisdn);
                 threshold80 = (int) (packageBalance * 0.20);
                 break;
             default:
                 return;
         }
 
+
+        //TODO Notification bozuk amk
+        //üsttekine girince alttakine girmiyor
         UserDetails userDetails = voltdbOperator.getUserDetails(msisdn);
-        if (currentBalance <= threshold100) {
-            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "100%", new Timestamp(System.currentTimeMillis()));
-        } else if (currentBalance <= threshold80) {
-            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "80%", new Timestamp(System.currentTimeMillis()));
+        if (currentBalance <= threshold80) {
+            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "%80", new Timestamp(System.currentTimeMillis()));
+        } else if ((packageBalance*0.01) > currentBalance) {
+            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "%100", new Timestamp(System.currentTimeMillis()));
         }
 
     }

@@ -11,6 +11,7 @@ import org.sk.i2i.evren.VoiceTransaction;
 public class ChargingActor extends AbstractActor {
 
     private final BalanceCalculator balanceCalculator = new BalanceCalculator(new VoltdbOperator());
+    //TODO asynchronous voltdb connection
 
     public int count = 0;
 
@@ -26,13 +27,22 @@ public class ChargingActor extends AbstractActor {
 
     private void handleDataMessage(DataTransaction dataMessage) {
         balanceCalculator.calculateDataRequest(dataMessage);
+        count++;
+        System.out.println("Data message received");
+        System.out.println(count);
     }
 
     private void handleSmsMessage(SmsTransaction smsMessage) {
         balanceCalculator.calculateSmsRequest(smsMessage);
+        count++;
+        System.out.println("SMS message received");
+        System.out.println(count);
     }
 
     private void handleVoiceMessage(VoiceTransaction voiceMessage) {
         balanceCalculator.calculateVoiceRequest(voiceMessage);
+        count++;
+        System.out.println("Voice message received");
+        System.out.println(count);
     }
 }
