@@ -26,8 +26,6 @@ public class CommandHandler {
 
     public void startCommander() {
 
-        int stopCounter =  0;
-
         outer:
         while(true) {
 
@@ -35,37 +33,40 @@ public class CommandHandler {
             String input = sc.nextLine();
 
             switch (input) {
-                case "start" -> threadManager.startThreads();
+                case "start"         -> threadManager.startThreads();
                 case "stop"          -> threadManager.stopThreads();
+                case "terminate"     -> { break outer; }
                 case "setDelay"      -> updateDelayAll();
                 case "setDelayVoice" -> updateDelay(TransType.VOICE);
                 case "setDelayData"  -> updateDelay(TransType.DATA);
                 case "setDelaySms"   -> updateDelay(TransType.SMS);
+                case "setTps"        -> setDelayByTps();
                 case "printDelay"    -> delayManager.printDelay();
                 case "printStats"    -> statsManager.printStats();
                 case "resetStats"    -> statsManager.resetStats();
-                case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the set of msisdn from Hazelcast
-                case "terminate"     -> {
-                    threadManager.stopThreads();
-                    sc.close();
-                    break outer;
-                }
-                case "testRandom"    -> {  //print a DataTransaction to test hazelcast fetch
-                    System.out.println(new DataTransaction(
-                            RandomGenerator.randomMsisdn(),
-                            RandomGenerator.randomLocation(),
-                            RandomGenerator.randomDataUsage(),
-                            RandomGenerator.randomRatingGroup()));
-                }
-                default -> {
-
-                    stopCounter++;
-                    if(stopCounter > 3)
-                        threadManager.stopThreads();
-                    else
-                        System.out.println("unrecognized command...");
-                }
+                case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the list of msisdn from Hazelcast
+                case "testRandom"    -> printTransTest();               //print a random transaction to test values
+                default -> System.out.println("unrecognized command...");
             }
+        }
+
+        threadManager.stopThreads();
+        sc.close();
+    }
+
+    private void setDelayByTps() {
+
+        try {
+            System.out.println("enter tps value:");
+
+            float tpmPerGenerator = sc.nextFloat() / 3;
+
+            int delay = Math.round(1000 / tpmPerGenerator);
+
+            delayManager.setDelayAll(delay);
+
+        } catch (InputMismatchException e) {
+            System.out.println("unsupported input format...");
         }
 
     }
@@ -74,13 +75,12 @@ public class CommandHandler {
 
         try {
             System.out.println("enter delay value:");
+            int delay = sc.nextInt();
 
             switch (type) {
-                case DATA -> delayManager.setDataDelay(sc.nextLong());
-
-                case VOICE -> delayManager.setVoiceDelay(sc.nextLong());
-
-                case SMS -> delayManager.setSmsDelay(sc.nextLong());
+                case DATA -> delayManager.setDataDelay(delay);
+                case VOICE -> delayManager.setVoiceDelay(delay);
+                case SMS -> delayManager.setSmsDelay(delay);
             }
 
         } catch (InputMismatchException e) {
@@ -92,12 +92,20 @@ public class CommandHandler {
 
         try {
             System.out.println("enter delay value:");
-            long delay = sc.nextLong();
+            int delay = sc.nextInt();
             delayManager.setDelayAll(delay);
 
         } catch (InputMismatchException e) {
             System.out.println("unsupported input format...");
         }
+    }
+
+    private void printTransTest() {
+        System.out.println(new DataTransaction(
+                RandomGenerator.randomMsisdn(),
+                RandomGenerator.randomLocation(),
+                RandomGenerator.randomDataUsage(),
+                RandomGenerator.randomRatingGroup()));
     }
 
 }

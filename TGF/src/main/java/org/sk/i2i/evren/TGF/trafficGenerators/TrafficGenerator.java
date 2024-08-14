@@ -21,7 +21,8 @@ public class TrafficGenerator implements Runnable{
     /**
      * @param type type of transaction to be generated
      * @param actor akka actor which will send transactions
-     *
+     * @param delayManager manages the delay time between transactions
+     * @param statsManager manages stats of generator, counts transactions and dropped transactions
      */
     public TrafficGenerator(TransType type, ActorRef actor, StatsManager statsManager, DelayManager delayManager) {
 
@@ -42,7 +43,6 @@ public class TrafficGenerator implements Runnable{
             sendTransaction();
             statsManager.incrementCounter(type);
             Clock.delay(delayManager.getDelay(type));
-
         }
 
         System.out.println(type + " traffic generation stopped...");
@@ -82,6 +82,7 @@ public class TrafficGenerator implements Runnable{
         }//end switch
     }
 
+    //set isGenerate bool to false to break the generation loop
     public void stop() {
         this.isGenerate = false;
     }

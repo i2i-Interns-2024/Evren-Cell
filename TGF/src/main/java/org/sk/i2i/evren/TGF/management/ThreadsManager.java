@@ -1,6 +1,7 @@
 package org.sk.i2i.evren.TGF.management;
 
 import org.sk.i2i.evren.TGF.trafficGenerators.TrafficGenerator;
+import org.sk.i2i.evren.TGF.util.Clock;
 
 public class ThreadsManager {
 
@@ -38,7 +39,9 @@ public class ThreadsManager {
         smsThread = new Thread(smsGenerator);
 
         voiceThread.start();
+        Clock.delay(400);
         dataThread.start();
+        Clock.delay(700);
         smsThread.start();
 
         System.out.println("Transaction generator started...");
