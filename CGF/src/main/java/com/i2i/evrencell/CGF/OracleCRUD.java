@@ -22,7 +22,16 @@ public class OracleCRUD {
             statement.setInt(5, usageRecord.getUsageDuration());
 
             statement.execute();
-            logger.info("procedure called successfully.");
+            logger.info(String.format("Calling insert procedure for UsageRecord{" +
+                            " callerMsisdn='%s', calleeMsisdn='%s'," +
+                            " usageType=%s, usageDuration=%d, usageDate=%s }",
+                    usageRecord.getCallerMsisdn(),
+                    usageRecord.getCalleeMsisdn(),
+                    usageRecord.getUsageType(),
+                    usageRecord.getUsageDuration(),
+                    usageRecord.getUsageDate()
+            ));
+
         } catch (SQLException e){
             logger.error("SQL Exception while calling procedure... ", e);
         }
