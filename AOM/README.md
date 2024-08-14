@@ -4,6 +4,8 @@
 > It is a microservice that is part of the larger system that is responsible for managing the orders of the accounts.
 > It is a RESTful service that is built using Spring Boot and Java.
 ---
+## High Level Design
+![AOM Service Diagram](docs/aom_diagram.png)
 
 ## Features
 - Create a customer account
@@ -36,9 +38,7 @@
 - Oracle DB
 - VoltDB
 
----
-## High Level Design
-![AOM Service Diagram](docs/aom_diagram.png)
+
 
 ---
 ## Endpoints
