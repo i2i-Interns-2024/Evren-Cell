@@ -52,19 +52,6 @@
             <version>19.3.0.0</version>
         </dependency>
 
-<!--        &lt;!&ndash;        VOLTDB      &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.voltdb</groupId>-->
-<!--            <artifactId>voltdbclient</artifactId>-->
-<!--            <version>13.2.2</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.voltdb</groupId>-->
-<!--            <artifactId>voltdb</artifactId>-->
-<!--            <version>10.0</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>com.i2i.evrencell</groupId>
             <artifactId>VoltDB</artifactId>
@@ -78,8 +65,6 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-
-
         <!--        LOMBOK      -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -87,13 +72,6 @@
             <optional>true</optional>
         </dependency>
 
-
-        <!--        HAZELCAST   -->
-<!--        <dependency>-->
-<!--            <groupId>com.hazelcast</groupId>-->
-<!--            <artifactId>hazelcast</artifactId>-->
-<!--            <version>5.5.0</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.slf4j</groupId>

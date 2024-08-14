@@ -3,8 +3,6 @@ package com.i2i.evrencell.aom.repository;
 import com.i2i.evrencell.aom.dto.PackageDetails;
 import com.i2i.evrencell.aom.exception.NotFoundException;
 import com.i2i.evrencell.aom.helper.OracleConnection;
-import com.i2i.evrencell.aom.helper.VoltDBConnection;
-import com.i2i.evrencell.aom.mapper.PackageMapper;
 import com.i2i.evrencell.voltdb.VoltPackage;
 import oracle.jdbc.OracleTypes;
 import org.springframework.stereotype.Repository;
@@ -24,14 +22,10 @@ import java.util.Optional;
 @Repository
 public class PackageRepository {
     private final OracleConnection oracleConnection;
-    private final VoltDBConnection voltDBConnection;
     private final VoltdbOperator voltdbOperator = new VoltdbOperator();
-    private final PackageMapper packageMapper;
 
-    public PackageRepository(OracleConnection oracleConnection, VoltDBConnection voltDBConnection, PackageMapper packageMapper) {
+    public PackageRepository(OracleConnection oracleConnection) {
         this.oracleConnection = oracleConnection;
-        this.voltDBConnection = voltDBConnection;
-        this.packageMapper = packageMapper;
     }
 
 

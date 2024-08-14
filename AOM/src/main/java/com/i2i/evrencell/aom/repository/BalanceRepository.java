@@ -1,11 +1,8 @@
 package com.i2i.evrencell.aom.repository;
 
-import com.i2i.evrencell.aom.dto.CustomerBalance;
 import com.i2i.evrencell.aom.exception.NotFoundException;
 import com.i2i.evrencell.aom.helper.OracleConnection;
-import com.i2i.evrencell.aom.helper.VoltDBConnection;
 import com.i2i.evrencell.aom.request.CreateBalanceRequest;
-import com.i2i.evrencell.voltdb.VoltCustomerBalance;
 import com.i2i.evrencell.voltdb.VoltPackageDetails;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
 import org.slf4j.Logger;
@@ -13,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import org.voltdb.VoltTable;
-import org.voltdb.client.Client;
-import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
@@ -28,14 +22,11 @@ import java.sql.Types;
 @Repository
 public class BalanceRepository {
     private final OracleConnection oracleConnection;
-    private final VoltDBConnection voltDBConnection;
     private final VoltdbOperator voltdbOperator = new VoltdbOperator();
     private final Logger logger = LoggerFactory.getLogger(BalanceRepository.class);
 
-    public BalanceRepository(OracleConnection oracleConnection,
-                             VoltDBConnection voltDBConnection) {
+    public BalanceRepository(OracleConnection oracleConnection) {
         this.oracleConnection = oracleConnection;
-        this.voltDBConnection = voltDBConnection;
     }
 
     /**

@@ -4,7 +4,6 @@ import com.i2i.evrencell.aom.constant.OracleQueries;
 import com.i2i.evrencell.aom.encryption.CustomerPasswordEncoder;
 import com.i2i.evrencell.aom.exception.NotFoundException;
 import com.i2i.evrencell.aom.helper.OracleConnection;
-import com.i2i.evrencell.aom.helper.VoltDBConnection;
 import com.i2i.evrencell.aom.model.Customer;
 import com.i2i.evrencell.aom.request.CreateBalanceRequest;
 import com.i2i.evrencell.aom.request.RegisterCustomerRequest;
@@ -14,9 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import org.voltdb.VoltTable;
-import org.voltdb.client.Client;
-import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcCallException;
 
 import java.io.IOException;
@@ -30,7 +26,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -40,7 +35,6 @@ import java.util.logging.Logger;
 public class CustomerRepository {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(CustomerRepository.class);
     private final OracleConnection oracleConnection;
-    private final VoltDBConnection voltDBConnection;
     private final BalanceRepository balanceRepository;
     private final CustomerPasswordEncoder customerPasswordEncoder;
     private final VoltdbOperator voltdbOperator = new VoltdbOperator();
@@ -48,11 +42,9 @@ public class CustomerRepository {
     private static final Logger logger = Logger.getLogger(CustomerRepository.class.getName());
 
     public CustomerRepository(OracleConnection oracleConnection,
-                              VoltDBConnection voltDBConnection,
                               BalanceRepository balanceRepository,
                               CustomerPasswordEncoder customerPasswordEncoder) {
         this.oracleConnection = oracleConnection;
-        this.voltDBConnection = voltDBConnection;
         this.balanceRepository = balanceRepository;
         this.customerPasswordEncoder = customerPasswordEncoder;
     }
@@ -283,7 +275,6 @@ public class CustomerRepository {
      * @throws InterruptedException
      */
     public ResponseEntity<String> createUserInVoltdb(RegisterCustomerRequest registerCustomerRequest) throws IOException, ProcCallException, InterruptedException {
-//        Client client = voltDBConnection.getClient();
 
         logger.info("Creating customer in VoltDB");
         int packageId = voltdbOperator.getPackageIdByName(registerCustomerRequest.packageName());
