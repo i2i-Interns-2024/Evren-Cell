@@ -30,4 +30,9 @@ public class KafkaOperations {
         publisher.send(new NotificationMessage(name, lastname, msisdn, email, type, amount, threshold, notificationTime), KafkaTopicConstants.NOTIFICATION_TOPIC);
         publisher.close();
     }
+
+    public static void main(String[] args) {
+        sendUsageRecordMessage(BalanceType.VOICE, "905331547887", "987654321", 60, new Timestamp(System.currentTimeMillis()));
+        sendUsageRecordMessage(BalanceType.DATA, "905331547887", null, 1024, new Timestamp(System.currentTimeMillis()));
+    }
 }

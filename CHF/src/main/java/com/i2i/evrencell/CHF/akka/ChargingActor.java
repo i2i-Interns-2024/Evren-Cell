@@ -12,6 +12,8 @@ public class ChargingActor extends AbstractActor {
 
     private final BalanceCalculator balanceCalculator = new BalanceCalculator(new VoltdbOperator());
 
+    public int count = 0;
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -23,17 +25,14 @@ public class ChargingActor extends AbstractActor {
     }
 
     private void handleDataMessage(DataTransaction dataMessage) {
-        System.out.println("Received data message");
         balanceCalculator.calculateDataRequest(dataMessage);
     }
 
     private void handleSmsMessage(SmsTransaction smsMessage) {
-        System.out.println("Received sms message");
         balanceCalculator.calculateSmsRequest(smsMessage);
     }
 
     private void handleVoiceMessage(VoiceTransaction voiceMessage) {
-        System.out.println("Received voice message");
         balanceCalculator.calculateVoiceRequest(voiceMessage);
     }
 }
