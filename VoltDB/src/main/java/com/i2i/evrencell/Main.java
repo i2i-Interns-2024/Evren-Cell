@@ -1,32 +1,34 @@
 package com.i2i.evrencell;
 
+import com.i2i.evrencell.voltdb.UserDetails;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
-import org.voltdb.client.ProcCallException;
-import java.io.IOException;
+import com.i2i.evrencell.voltdb.VoltdbOperator2;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+
+        VoltdbOperator op = new VoltdbOperator();
 
         double startTime = System.currentTimeMillis();
-        VoltdbOperator voltdbOperator = new VoltdbOperator();
+        System.out.println(1);
 
-        for (int i = 0; i < 10; i++) {
-            System.out.println(voltdbOperator.getSmsBalance("5551234567"));
-            System.out.println(voltdbOperator.getVoiceBalance("5551234567"));
-            System.out.println(voltdbOperator.getDataBalance("5551234567"));
-            System.out.println(voltdbOperator.getCustomerIdByEmailAndTc("john.doe@example.com", "12345678901"));
-            System.out.println(voltdbOperator.getLastName("5551234567"));
-            System.out.println(voltdbOperator.getMaxBalanceId());
-            System.out.println(voltdbOperator.getMaxCustomerId());
+
+        for (int i = 0; i < 5; ++i) {
+            op.updateDataBalance(25000 - i, "905372117887");
+            System.out.println(op.getDataBalance("905372117887"));
         }
-
-
-
-        voltdbOperator.close();
+        op.close();
 
 
         double endTime = System.currentTimeMillis();
         double elapsedTime = endTime - startTime;
         System.out.println("Elapsed time: " + elapsedTime);
+        System.out.println("Time taken: " + (endTime - startTime));
     }
+
+
 }
+
