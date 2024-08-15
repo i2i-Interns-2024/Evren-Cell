@@ -9,7 +9,8 @@ import com.i2i.evrencell.aom.request.CreateBalanceRequest;
 import com.i2i.evrencell.aom.request.RegisterCustomerRequest;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
 import oracle.jdbc.OracleTypes;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -26,21 +27,18 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * This class is used to handle the database operations for the customers.
  */
 @Repository
 public class CustomerRepository {
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CustomerRepository.class);
+    private static final Logger logger = LogManager.getLogger(CustomerRepository.class);
     private final OracleConnection oracleConnection;
     private final BalanceRepository balanceRepository;
     private final CustomerPasswordEncoder customerPasswordEncoder;
     private final VoltdbOperator voltdbOperator = new VoltdbOperator();
     
-    private static final Logger logger = Logger.getLogger(CustomerRepository.class.getName());
-
     public CustomerRepository(OracleConnection oracleConnection,
                               BalanceRepository balanceRepository,
                               CustomerPasswordEncoder customerPasswordEncoder) {
@@ -58,13 +56,21 @@ public class CustomerRepository {
      * @throws ClassNotFoundException
      */
     public List<Customer> getAllCustomers() throws SQLException, ClassNotFoundException {
+        logger.debug("Getting all customers from Oracle DB");
         List<Customer> customers = new ArrayList<>();
+        logger.debug("Creating connection to Oracle DB");
         Connection connection = oracleConnection.getOracleConnection();
+        logger.debug("Connection created to Oracle DB");
+        logger.debug("Creating callable statement to get all customers");
         CallableStatement callableStatement = connection.prepareCall("{call get_all_customers(?)}");
 
+        logger.debug("Registering out parameter for get_all_customers");
         callableStatement.registerOutParameter(1, OracleTypes.CURSOR);
+        logger.debug("Executing get_all_customers");
         callableStatement.execute();
+        logger.debug("get_all_customers executed successfully");
 
+        logger.debug("Getting result set from get_all_customers");
         ResultSet resultSet = (ResultSet) callableStatement.getObject(1);
 
         while (resultSet.next()) {
@@ -87,7 +93,9 @@ public class CustomerRepository {
                     .build();
             customers.add(customer);
         }
+        logger.debug("Result set retrieved successfully from get_all_customers");
 
+        logger.debug("Closing result set, callable statement and connection");
         resultSet.close();
         callableStatement.close();
         connection.close();
@@ -107,13 +115,15 @@ public class CustomerRepository {
      */
     public ResponseEntity<String> createUserInOracle(RegisterCustomerRequest registerCustomerRequest) throws SQLException, ClassNotFoundException {
 
+        logger.debug("Creating customer in Oracle DB");
         if (customerExists(registerCustomerRequest.msisdn(), registerCustomerRequest.email(), registerCustomerRequest.TCNumber())) {
             return new ResponseEntity<>("This customer already exists in Oracle DB.", HttpStatus.CONFLICT);
         }
-        System.out.println("Customer created successfully in Oracle DB1.");
-
+        logger.debug("Connecting to Oracle DB");
         Connection connection = oracleConnection.getOracleConnection();
+        logger.debug("Connected to Oracle DB");
 
+        logger.debug("Retrieving package id from Oracle DB.");
         CallableStatement packageStmt = connection.prepareCall("{call SELECT_PACKAGE_ID(?, ?)}");
         packageStmt.setString(1, registerCustomerRequest.packageName());
         packageStmt.registerOutParameter(2, Types.INTEGER);
@@ -127,11 +137,13 @@ public class CustomerRepository {
             throw new NotFoundException("Package Not Found IN ORACLE.");
         }
 
-        logger.info("Retrieved package id: " + packageId);
+        logger.debug("Retrieved package id: " + packageId);
 
+        logger.debug("Encrypting password for customer.");
         String encodedPassword = customerPasswordEncoder.encrypt(registerCustomerRequest.password());
-        logger.info("Customer created successfully in Oracle DB2.");
+        logger.debug("Password encrypted successfully.");
 
+        logger.debug("Creating customer in Oracle DB.");
         CallableStatement customerStmt = connection.prepareCall("{call INSERT_CUSTOMER(?, ?, ?, ?, ?, ?, ?)}");
         customerStmt.setString(1, registerCustomerRequest.name());
         customerStmt.setString(2, registerCustomerRequest.surname());
@@ -140,10 +152,12 @@ public class CustomerRepository {
         customerStmt.setString(5, encodedPassword);
         customerStmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
         customerStmt.setString(7, registerCustomerRequest.TCNumber());
+        logger.debug("Executing INSERT_CUSTOMER");
         customerStmt.execute();
+        logger.debug("INSERT_CUSTOMER executed successfully");
         customerStmt.close();
+        logger.debug("Customer created successfully in Oracle DB.");
 
-        logger.info("Customer created successfully in Oracle DB.");
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(OracleQueries.SELECT_CUSTOMER_ID);
         int customerId = 0;
@@ -153,7 +167,6 @@ public class CustomerRepository {
         rs.close();
         stmt.close();
 
-        logger.info("Generated customer ID: " + customerId);
 
         CreateBalanceRequest createBalanceRequest = CreateBalanceRequest.builder()
                 .customerId(customerId)
@@ -178,7 +191,7 @@ public class CustomerRepository {
     * @throws ClassNotFoundException
      */
     private boolean customerExists(String msisdn, String email, String tcNo) throws SQLException, ClassNotFoundException {
-        System.out.println("customer exists.");
+        logger.debug("Checking if customer exists in Oracle DB.");
 
         Connection connection = oracleConnection.getOracleConnection();
         PreparedStatement stmt = connection.prepareStatement(OracleQueries.IS_CUSTOMER_ALREADY_EXISTS);
@@ -193,8 +206,6 @@ public class CustomerRepository {
         rs.close();
         stmt.close();
         connection.close();
-        System.out.println("customer exists.2");
-
         return exists;
     }
 
@@ -206,6 +217,7 @@ public class CustomerRepository {
      * @throws ClassNotFoundException
      */
     public String getEncodedCustomerPasswordByMsisdn(String msisdn) throws SQLException, ClassNotFoundException {
+        logger.debug("Getting encoded password of customer by MSISDN");
         Connection connection = oracleConnection.getOracleConnection();
         PreparedStatement stmt = connection.prepareStatement(OracleQueries.SELECT_PASSWORD);
         stmt.setString(1, msisdn);
@@ -233,12 +245,19 @@ public class CustomerRepository {
     public void updatePasswordInOracle(String email, String tcNumber, String encryptedPassword) throws
             SQLException,
             ClassNotFoundException {
+        logger.debug("Updating password in Oracle DB");
+        logger.debug("Connecting to Oracle DB");
         Connection connection = oracleConnection.getOracleConnection();
+        logger.debug("Connected to Oracle DB");
+        logger.debug("Creating callable statement to update password in Oracle DB");
         CallableStatement updatePasswordInOracleStatement = connection.prepareCall("{call UPDATE_CUSTOMER_PASSWORD(?, ?, ?)}");
         updatePasswordInOracleStatement.setString(1, email);
         updatePasswordInOracleStatement.setString(2, tcNumber);
         updatePasswordInOracleStatement.setString(3, encryptedPassword);
+        logger.debug("Executing UPDATE_CUSTOMER_PASSWORD");
         updatePasswordInOracleStatement.execute();
+        logger.debug("UPDATE_CUSTOMER_PASSWORD executed successfully");
+        logger.debug("Closing callable statement and connection");
         updatePasswordInOracleStatement.close();
         connection.close();
     }
@@ -253,12 +272,16 @@ public class CustomerRepository {
      * @throws ClassNotFoundException
      */
     public void insertNotificationLogInOracle(String notificationType, Timestamp notificationTime, int customerId) throws SQLException, ClassNotFoundException {
+        logger.debug("Inserting notification log in Oracle DB");
         Connection connection = oracleConnection.getOracleConnection();
         CallableStatement notificationLogCallabaleStatement = connection.prepareCall("{call INSERT_NOTIFICATION_LOG(?, ?, ?)}");
         notificationLogCallabaleStatement.setString(1, notificationType);
         notificationLogCallabaleStatement.setTimestamp(2, notificationTime);
         notificationLogCallabaleStatement.setInt(3, customerId);
+        logger.debug("Executing INSERT_NOTIFICATION_LOG");
         notificationLogCallabaleStatement.execute();
+        logger.debug("INSERT_NOTIFICATION_LOG executed successfully");
+        logger.debug("Closing callable statement and connection");
         notificationLogCallabaleStatement.close();
         connection.close();
     }
@@ -276,14 +299,12 @@ public class CustomerRepository {
      */
     public ResponseEntity<String> createUserInVoltdb(RegisterCustomerRequest registerCustomerRequest) throws IOException, ProcCallException, InterruptedException {
 
-        logger.info("Creating customer in VoltDB");
+        logger.debug("Creating customer in VoltDB");
         int packageId = voltdbOperator.getPackageIdByName(registerCustomerRequest.packageName());
-        logger.info("Package ID: " + packageId);
         int maxCustomerId = voltdbOperator.getMaxCustomerId();
-        logger.info("Max customer ID: " + maxCustomerId);
         int customerId = maxCustomerId + 1;
 
-        logger.info("Inserting customer in VoltDB");
+        logger.debug("Inserting customer in VoltDB");
         voltdbOperator.insertCustomer(
                 customerId,
                 registerCustomerRequest.name(),
@@ -294,21 +315,19 @@ public class CustomerRepository {
                 new Timestamp(System.currentTimeMillis()),
                 registerCustomerRequest.TCNumber()
         );
-        logger.info("Customer inserted in VoltDB");
-
-        logger.info("Creating balance in VoltDB");
+        logger.debug("Customer inserted successfully in VoltDB");
         CreateBalanceRequest createBalanceRequest = CreateBalanceRequest.builder()
                 .customerId(customerId)
                 .packageId(packageId)
                 .build();
 
-        //        client.close();
 
         return balanceRepository.createVoltBalance(createBalanceRequest);
     }
 
 
     public void updatePasswordInVoltDB(String email, String tcNumber, String encryptedPassword) throws IOException, InterruptedException, ProcCallException {
+        logger.debug("Updating password in VoltDB");
         voltdbOperator.updatePassword(email, tcNumber, encryptedPassword);
     }
 
@@ -327,9 +346,8 @@ public class CustomerRepository {
      */
     public boolean checkCustomerExists(String email, String tcNumber) throws
                                                                             SQLException,
-                                                                            ClassNotFoundException
-                                                                             {
-        // Check if the customer exists in Oracle
+                                                                            ClassNotFoundException {
+        logger.debug("Checking if customer exists in Oracle");
         Connection connection = oracleConnection.getOracleConnection();
         CallableStatement oracleCallableStatement = connection.prepareCall("{call CHECK_CUSTOMER_EXISTS_BY_MAIL_AND_TCNO(?, ?, ?)}");
         oracleCallableStatement.setString(1, email);
@@ -340,6 +358,7 @@ public class CustomerRepository {
         oracleCallableStatement.close();
         connection.close();
         boolean ifCustomerExistsInOracle = oracleStatementReturnCount > 0;
+        logger.debug("Customer exists in Oracle: " + ifCustomerExistsInOracle);
         return ifCustomerExistsInOracle;
 
     }
