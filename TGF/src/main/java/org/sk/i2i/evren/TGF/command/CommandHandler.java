@@ -36,14 +36,22 @@ public class CommandHandler {
                 case "start"         -> threadManager.startThreads();
                 case "stop"          -> threadManager.stopThreads();
                 case "terminate"     -> { break outer; }
+
                 case "setDelay"      -> updateDelayAll();
                 case "setDelayVoice" -> updateDelay(TransType.VOICE);
                 case "setDelayData"  -> updateDelay(TransType.DATA);
                 case "setDelaySms"   -> updateDelay(TransType.SMS);
-                case "setTps"        -> setDelayByTps();
+
+                case "setTps"        -> setDelayByTpsAll();
+                case "setTpsVoice" -> setDelayByTps(TransType.VOICE);
+                case "setTpsData"  -> setDelayByTps(TransType.DATA);
+                case "setTpsSms"   -> setDelayByTps(TransType.SMS);
+
                 case "printDelay"    -> delayManager.printDelay();
+                case "printTps"    -> delayManager.printTps();
                 case "printStats"    -> statsManager.printStats();
                 case "resetStats"    -> statsManager.resetStats();
+
                 case "updateMsisdn"  -> RandomGenerator.fetchMsisdn();  //update the list of msisdn from Hazelcast
                 case "testRandom"    -> printTransTest();               //print a random transaction to test values
                 default -> System.out.println("unrecognized command...");
@@ -54,16 +62,37 @@ public class CommandHandler {
         sc.close();
     }
 
-    private void setDelayByTps() {
+    private void setDelayByTpsAll() {
 
         try {
             System.out.println("enter tps value:");
 
-            float tpmPerGenerator = sc.nextFloat() / 3;
+            float tpsPerGenerator = sc.nextFloat() / 3;
 
-            int delay = Math.round(1000 / tpmPerGenerator);
+            int delay = Math.round(1000 / tpsPerGenerator);
 
             delayManager.setDelayAll(delay);
+
+        } catch (InputMismatchException e) {
+            System.out.println("unsupported input format...");
+        }
+
+    }
+
+    private void setDelayByTps(TransType type) {
+
+        try {
+            System.out.println("enter tps value:");
+
+            float tps = sc.nextFloat();
+
+            int delay = Math.round(1000 / tps);
+
+            switch (type) {
+                case DATA -> delayManager.setDataDelay(delay);
+                case VOICE -> delayManager.setVoiceDelay(delay);
+                case SMS -> delayManager.setSmsDelay(delay);
+            }
 
         } catch (InputMismatchException e) {
             System.out.println("unsupported input format...");

@@ -22,6 +22,24 @@ public class DelayManager {
         );
     }
 
+    public void printTps() {
+
+        double voice = calculateTps(getVoiceDelay());
+        double data = calculateTps(getDataDelay());
+        double sms = calculateTps(getSmsDelay());
+
+        System.out.println(
+                "Voice tps: " + voice +
+                "\nData tps:  " + data +
+                "\nSms tps:   " + sms +
+                "\nTotal tps: " + (voice + data + sms)
+        );
+    }
+
+    public double calculateTps(int delay) {
+        return Math.round( ((double) 1000 /delay) * 100.0) / 100.0;
+    }
+
     public int getVoiceDelay() {
         return voiceDelay;
     }
