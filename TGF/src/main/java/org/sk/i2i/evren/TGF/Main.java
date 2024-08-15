@@ -19,7 +19,7 @@ public class Main {
         //data managers
         StatsManager statsManager = new StatsManager();
 
-        DelayManager delayManager = new DelayManager(3000, 3000, 3000); //initial delay 1s, 3tps
+        DelayManager delayManager = new DelayManager(3000000000L, 3000000000L, 3000000000L); //initial delay 1s, 3tps
 
         //start akka system and actors
         ActorSystem actorSystem = ActorSystem.create("TGFSystem", ConfigFactory.load("application.conf"));
@@ -41,9 +41,9 @@ public class Main {
         commander.startCommander();
 
         //exit the application
-        Clock.delay(1);
+        Clock.delay(1000000L);
         actorSystem.terminate();
-        Clock.delay(1000);
+        Clock.delay(1000L);
         System.exit(0);
 
     }

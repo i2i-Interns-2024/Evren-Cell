@@ -4,11 +4,11 @@ import org.sk.i2i.evren.TGF.constants.TransType;
 
 public class DelayManager {
 
-    private int voiceDelay;
-    private int dataDelay;
-    private int smsDelay;
+    private Long voiceDelay;
+    private Long dataDelay;
+    private Long smsDelay;
 
-    public DelayManager(int voiceDelay, int dataDelay, int smsDelay) {
+    public DelayManager(Long voiceDelay, Long dataDelay, Long smsDelay) {
         this.voiceDelay = voiceDelay;
         this.dataDelay = dataDelay;
         this.smsDelay = smsDelay;
@@ -36,35 +36,35 @@ public class DelayManager {
         );
     }
 
-    public double calculateTps(int delay) {
-        return Math.round( ((double) 1000 /delay) * 100.0) / 100.0;
+    public double calculateTps(long delay) {
+        return Math.round( ((double) 1000000000 /delay) * 100.0) / 100.0;
     }
 
-    public int getVoiceDelay() {
+    public Long getVoiceDelay() {
         return voiceDelay;
     }
 
-    public void setVoiceDelay(int voiceDelay) {
+    public void setVoiceDelay(Long voiceDelay) {
         this.voiceDelay = voiceDelay;
     }
 
-    public int getDataDelay() {
+    public Long getDataDelay() {
         return dataDelay;
     }
 
-    public void setDataDelay(int dataDelay) {
+    public void setDataDelay(Long dataDelay) {
         this.dataDelay = dataDelay;
     }
 
-    public int getSmsDelay() {
+    public Long getSmsDelay() {
         return smsDelay;
     }
 
-    public void setSmsDelay(int smsDelay) {
+    public void setSmsDelay(Long smsDelay) {
         this.smsDelay = smsDelay;
     }
 
-    public int getDelay(TransType type) {
+    public Long getDelay(TransType type) {
         switch (type) {
             case DATA -> {
                 return getDataDelay();
@@ -76,10 +76,10 @@ public class DelayManager {
                 return getSmsDelay();
             }
         }
-        return -1;
+        return -1L;
     }
 
-    public void setDelayAll(int delay) {
+    public void setDelayAll(Long delay) {
         setSmsDelay(delay);
         setDataDelay(delay);
         setVoiceDelay(delay);
