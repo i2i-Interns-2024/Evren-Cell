@@ -1,6 +1,8 @@
 package com.i2i.evrencell.aom;
 
 import com.i2i.evrencell.aom.helper.OracleConnection;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class AomApplication implements CommandLineRunner {
 
     private final OracleConnection oracleConnection;
+    private static final Logger logger = LogManager.getLogger(AomApplication.class);
 
     public AomApplication(OracleConnection oracleConnection
     ) {
@@ -21,7 +24,7 @@ public class AomApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println(oracleConnection.getOracleConnection());
+        logger.debug(oracleConnection.getOracleConnection());
 
     }
 }

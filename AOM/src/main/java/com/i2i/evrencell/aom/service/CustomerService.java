@@ -5,6 +5,8 @@ import com.i2i.evrencell.aom.mapper.CustomerMapper;
 import com.i2i.evrencell.aom.repository.CustomerRepository;
 import com.i2i.evrencell.voltdb.VoltCustomer;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.voltdb.client.ProcCallException;
 
@@ -17,6 +19,7 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
     private final VoltdbOperator voltdbOperator = new VoltdbOperator();
+    private static final Logger logger = LogManager.getLogger(CustomerService.class);
 
     public CustomerService(CustomerRepository customerRepository, CustomerMapper customerMapper) {
         this.customerRepository = customerRepository;
@@ -32,9 +35,10 @@ public class CustomerService {
      * @throws ProcCallException
      */
     public CustomerDto getCustomerByMsisdn(String msisdn) throws IOException, InterruptedException, ProcCallException {
-
+        logger.debug("Getting customer by MSISDN: " + msisdn);
         VoltCustomer voltCustomer = voltdbOperator.getCustomerByMsisdn(msisdn)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
+        logger.debug("Customer found by MSISDN: " + msisdn);
         return customerMapper.voltCustomerBalanceToCustomerDto(voltCustomer);
     }
 
@@ -45,6 +49,7 @@ public class CustomerService {
      * @throws ClassNotFoundException
      */
     public List<CustomerDto> getAllCustomers() throws SQLException, ClassNotFoundException {
+        logger.debug("Getting all customers");
         return customerRepository.getAllCustomers()
                 .stream()
                 .map(customerMapper::customerToCustomerDto)
