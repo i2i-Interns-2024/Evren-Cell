@@ -3,17 +3,28 @@ package com.i2i.evrencell.CHF.calculator;
 import com.i2i.evrencell.kafka.message.BalanceType;
 import com.i2i.evrencell.voltdb.UserDetails;
 import com.i2i.evrencell.voltdb.VoltdbOperator;
+import org.apache.log4j.Logger;
 import org.sk.i2i.evren.DataTransaction;
 import org.sk.i2i.evren.SmsTransaction;
 import org.sk.i2i.evren.VoiceTransaction;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.i2i.evrencell.CHF.kafka.KafkaOperations.*;
 
 public class BalanceCalculator {
 
+    private static final Logger logger = Logger.getLogger(BalanceCalculator.class);
+
     private final VoltdbOperator voltdbOperator;
+    private final Map<String, Boolean> threshold80SentMap = new HashMap<>();
+    private final Map<String, Boolean> threshold100SentMap = new HashMap<>();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public BalanceCalculator(VoltdbOperator voltdbOperator) {
         this.voltdbOperator = voltdbOperator;
@@ -32,87 +43,91 @@ public class BalanceCalculator {
     }
 
     private void processRequest(BalanceType type, String msisdn, int usage, String... otherMsisdn) {
-        int userBalance = switch (type) {
-            case DATA -> getUserDataBalance(msisdn);
-            case VOICE -> getUserVoiceBalance(msisdn);
-            case SMS -> getUserSmsBalance(msisdn);
+        CompletableFuture.supplyAsync(() -> getUserBalance(type, msisdn), executor).thenAccept(userBalance -> {
+            if (userBalance >= usage) {
+                int updatedBalance = userBalance - usage;
+                updateUserBalance(type, msisdn, updatedBalance, otherMsisdn);
+                sendUpdatedBalanceMessage(type, msisdn, updatedBalance);
+                checkUsageThreshold(type, msisdn, updatedBalance);
+            } else {
+                logger.warn("Insufficient balance: Requested " + usage + " but only " + userBalance + " available for " + msisdn);
+                handlePartialUsage(type, msisdn, userBalance, usage, otherMsisdn);
+            }
+        }).exceptionally(ex -> {
+            logger.error("Error processing request: " + ex.getMessage(), ex);
+            return null;
+        });
+    }
+
+    private int getUserBalance(BalanceType type, String msisdn) {
+        return switch (type) {
+            case DATA -> voltdbOperator.getDataBalance(msisdn);
+            case VOICE -> voltdbOperator.getVoiceBalance(msisdn);
+            case SMS -> voltdbOperator.getSmsBalance(msisdn);
             default -> 0;
         };
+    }
 
-        if (userBalance >= usage) {
-            int updatedBalance = userBalance - usage;
-            updateUserBalance(type, msisdn, updatedBalance, otherMsisdn);
-            sendUpdatedBalanceMessage(type, msisdn, updatedBalance);
-            //TODO Notification bozuk amk
-            //checkUsageThreshold(type, msisdn, updatedBalance);
+    private void updateUserBalance(BalanceType type, String msisdn, int updatedBalance, String... otherMsisdn) {
+        switch (type) {
+            case DATA -> voltdbOperator.updateDataBalance(updatedBalance, msisdn);
+            case VOICE -> voltdbOperator.updateVoiceBalance(updatedBalance, msisdn);
+            case SMS -> voltdbOperator.updateSmsBalance(updatedBalance, msisdn);
+        }
+        sendUsageRecordMessage(type, msisdn, otherMsisdn.length > 0 ? otherMsisdn[0] : null, updatedBalance, new Timestamp(System.currentTimeMillis()));
+        logger.info("Updated balance for " + msisdn + ": " + updatedBalance + " " + type);
+    }
 
+    private void handlePartialUsage(BalanceType type, String msisdn, int userBalance, int usage, String... otherMsisdn) {
+        if (userBalance > 0) {
+            updateUserBalance(type, msisdn, 0, otherMsisdn);
+            sendUpdatedBalanceMessage(type, msisdn, 0);
+            checkUsageThreshold(type, msisdn, 0);
+            logger.info("User " + msisdn + " used remaining balance of " + userBalance + " " + type + ". Request for " + usage + " was partially fulfilled.");
         } else {
             insufficientBalance(type, msisdn);
         }
     }
 
     private void insufficientBalance(BalanceType type, String msisdn) {
-        System.out.println("No sufficient " + type + " balance for " + msisdn);
-    }
-
-    private int getUserDataBalance(String msisdn) {
-        return voltdbOperator.getDataBalance(msisdn);
-    }
-
-    private int getUserVoiceBalance(String msisdn) {
-        return voltdbOperator.getVoiceBalance(msisdn);
-    }
-
-    private int getUserSmsBalance(String msisdn) {
-        return voltdbOperator.getSmsBalance(msisdn);
-    }
-
-    private void updateUserBalance(BalanceType type, String msisdn, int updatedBalance, String... otherMsisdn) {
-        switch (type) {
-            case DATA:
-                voltdbOperator.updateDataBalance(updatedBalance, msisdn);
-                sendUsageRecordMessage(type, msisdn, null, updatedBalance, new Timestamp(System.currentTimeMillis()));
-                break;
-            case VOICE:
-                voltdbOperator.updateVoiceBalance(updatedBalance, msisdn);
-                sendUsageRecordMessage(type, msisdn, otherMsisdn[0], updatedBalance, new Timestamp(System.currentTimeMillis()));
-                break;
-            case SMS:
-                voltdbOperator.updateSmsBalance(updatedBalance, msisdn);
-                sendUsageRecordMessage(type, msisdn, otherMsisdn[0], updatedBalance, new Timestamp(System.currentTimeMillis()));
-                break;
-        }
+        logger.warn("No sufficient " + type + " balance for " + msisdn);
     }
 
     private void checkUsageThreshold(BalanceType type, String msisdn, int currentBalance) {
         int packageBalance;
         int threshold80;
+        int threshold1;
+
         switch (type) {
             case DATA:
                 packageBalance = voltdbOperator.getPackageDataBalance(msisdn);
                 threshold80 = (int) (packageBalance * 0.20);
+                threshold1 = (int) (packageBalance * 0.01);
                 break;
             case SMS:
                 packageBalance = voltdbOperator.getPackageSmsBalance(msisdn);
                 threshold80 = (int) (packageBalance * 0.20);
+                threshold1 = (int) (packageBalance * 0.01);
                 break;
             case VOICE:
                 packageBalance = voltdbOperator.getPackageVoiceBalance(msisdn);
                 threshold80 = (int) (packageBalance * 0.20);
+                threshold1 = (int) (packageBalance * 0.01);
                 break;
             default:
                 return;
         }
 
-
-        //TODO Notification bozuk amk
-        //üsttekine girince alttakine girmiyor
         UserDetails userDetails = voltdbOperator.getUserDetails(msisdn);
-        if (currentBalance <= threshold80) {
-            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "%80", new Timestamp(System.currentTimeMillis()));
-        } else if ((packageBalance*0.01) > currentBalance) {
-            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "%100", new Timestamp(System.currentTimeMillis()));
-        }
 
+        if (currentBalance <= threshold80 && !threshold80SentMap.getOrDefault(msisdn, false)) {
+            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "%80", new Timestamp(System.currentTimeMillis()));
+            threshold80SentMap.put(msisdn, true);
+            logger.info("80% usage notification sent for " + msisdn);
+        } else if (currentBalance <= threshold1 && !threshold100SentMap.getOrDefault(msisdn, false)) {
+            sendNotificationMessage(userDetails.getName(), userDetails.getLastName(), msisdn, userDetails.getEmail(), type, packageBalance, "%100", new Timestamp(System.currentTimeMillis()));
+            threshold100SentMap.put(msisdn, true);
+            logger.info("100% usage notification sent for " + msisdn);
+        }
     }
 }
