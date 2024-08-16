@@ -35,7 +35,7 @@ public class TrafficGenerator implements Runnable{
     @Override
     public void run() {
 
-        statsManager.resetTimer(type);
+        statsManager.resetStats();
         isGenerate = true;
 
         while(isGenerate) {

@@ -1,6 +1,7 @@
 package org.sk.i2i.evren.TGF.management;
 
 import org.sk.i2i.evren.TGF.constants.TransType;
+import org.sk.i2i.evren.TGF.util.Clock;
 
 public class DelayManager {
 
@@ -37,7 +38,7 @@ public class DelayManager {
     }
 
     public double calculateTps(long delay) {
-        return Math.round( ((double) 1000000000 /delay) * 100.0) / 100.0;
+        return Math.round( ((double) Clock.secondInNano /delay) * 100.0) / 100.0;
     }
 
     public Long getVoiceDelay() {

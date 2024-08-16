@@ -2,24 +2,16 @@ package org.sk.i2i.evren.TGF.util;
 
 public class Clock {
 
-    /**
-     * @param delay time to delay in ms
-     */
-//    public static void delay(long delay) {
-//
-//        try {
-//            Thread.sleep(delay);
-//        } catch (InterruptedException e) {
-//            System.out.println("exception: couldn't delay!");
-//        }
-//
-//    }
+    public static final long secondInNano = 1000000000L;
 
+    /**
+     * @param delay time to delay in ns
+     */
     public static void delay(long delay) {
 
-        long nanostart = System.nanoTime();
+        long nanoStart = System.nanoTime();
 
-        while (System.nanoTime() - nanostart < delay) {
+        while (System.nanoTime() - nanoStart < delay) {
             // Busy-wait loop
         }
 
