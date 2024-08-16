@@ -36,7 +36,7 @@ public class RandomGenerator {
     public static void fetchMsisdn() {
 
         allMsisdn = new ArrayList<>(HazelcastSimulatorOperation.getAllMsisdn());
-        System.out.println("msisdn list was updated...");
+        System.out.println("msisdn list was updated:  " + allMsisdn.size());
 
 /*        System.out.println("fetchMsisdn: size " + allMsisdn.size());
         for (Object msisdn : allMsisdn) {

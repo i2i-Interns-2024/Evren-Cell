@@ -46,6 +46,7 @@ public class StatsManager {
             );
 
         }
+        System.out.println("TOTAL TRANSACTIONS: " + (map.get(TransType.SMS).counter + map.get(TransType.VOICE).counter + map.get(TransType.DATA).counter));
     }
 
     public void resetStats() {

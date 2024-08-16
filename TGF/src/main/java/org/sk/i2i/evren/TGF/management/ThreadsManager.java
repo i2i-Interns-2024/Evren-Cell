@@ -32,8 +32,6 @@ public class ThreadsManager {
 
     private void runThreads() {
 
-//        resetStats();
-
         voiceThread = new Thread(voiceGenerator);
         dataThread = new Thread(dataGenerator);
         smsThread = new Thread(smsGenerator);
