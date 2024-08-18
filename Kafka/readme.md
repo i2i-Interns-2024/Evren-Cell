@@ -12,6 +12,6 @@
 
 5. **Convert Your Project to JAR File** - *Local*
 
-6. **Show the Usage of the JAR File by Giving It to the Relevant Services**
+6. **Show the Usage of the JAR File by giving it to the relevant services**
 
 </div>
