@@ -20,7 +20,7 @@ public class Publisher <T extends Message> {
 
     Producer <String, T> producer;
 
-    public <U extends T> Producer<String, U> createProducer(String className) {
+    public Producer<String, T> createProducer(String className) {
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigLoader.getProperty("kafka.url"));
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
