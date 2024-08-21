@@ -22,14 +22,14 @@ import java.util.Properties;
 public class Subscriber <T extends Message>{
     Consumer<String, T> consumer;
 
-    public <U extends T> Consumer<String, U> createConsumer(String className, String topicName, String consumerGroup) {
+    public Consumer<String, T> createConsumer(String className, String topicName, String consumerGroup) {
         Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigLoader.getProperty("kafka.url"));
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, className);
 
-        Consumer<String, U> consumer = new KafkaConsumer<>(properties);
+        Consumer<String, T> consumer = new KafkaConsumer<>(properties);
         consumer.subscribe(Collections.singletonList(topicName));
 
         return consumer;
