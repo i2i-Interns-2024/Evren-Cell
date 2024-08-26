@@ -21,9 +21,9 @@ LinkedIn post can be reached from the link here ---------> [LinkedIn Post](https
 | Gülben Emanet               | Android App               |
 | Furkan Koçal                | Desktop App               |
 | Eray Keleş                  | SMS App                   |
-| İbrahim Kenan Balcı         | CHF/OCS                   |
-| Ahmet Sefa Çetin            | ABMF/SF                   |
-| Kaan Yavuz                  | AOM/MW                    |
+| İbrahim Kenan Balcı         | CHF                   |
+| Ahmet Sefa Çetin            | ABMF                   |
+| Kaan Yavuz                  | AOM                    |
 | Hamza Elzarw                | TGF                       |
 | Burak Atalay                | CGF                       |
 | Talha Ege Çakmak            | NF                        | 
