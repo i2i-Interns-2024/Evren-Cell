@@ -1,6 +1,6 @@
 # Evren Cell
 
-TelCo project during i2i 2024 internship.
+Online Charging System (OCS) project during i2i systems 2024 internshi.
 
 LinkedIn post can be reached from the link here ---------> [LinkedIn Post](https://www.linkedin.com/posts/begum-ugurlu_online-charging-system-project-begum-ugurlu-activity-7231321564045033472-BdcB?utm_source=share&utm_medium=member_android)
 
