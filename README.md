@@ -9,19 +9,19 @@ LinkedIn post can be reached from the link here ---------> [LinkedIn Post](https
 | Name                        | Role                      |
 |-----------------------------|---------------------------|
 | Begüm Uğurlu                | Project Manager           |
-| Ömer Faruk Şafakoğlu        | Analyst/Designer          |
+| Ömer Faruk Şafakoğlu        | Analyst                   |
 | Bilal Arslan                | Oracle DB                 |
 | Enes Tahtacı                | Oracle DB                 |
 | Emirhan Kaplan              | VoltDB                    |
 | Mustafa Yasin Emir          | Kafka                     |
-| Tuna Başar                  | Web App (Java)            |
+| Tuna Başar                  | Web App                   |
 | Ömer Faruk Şafakoğlu        | iOS App                   |
 | Gülben Emanet               | Android App               |
-| Furkan Koçal                | Desktop App (Java)        |
-| Eray Keleş                  | SMS App (Java)            |
+| Furkan Koçal                | Desktop App               |
+| Eray Keleş                  | SMS App                   |
 | İbrahim Kenan Balcı         | CHF/OCS                   |
-| Ahmet Sefa Çetin            | ABMF/SF (Java)            |
-| Kaan Yavuz                  | AOM/MW (Java)             |
-| Hamza Elzarw                | TGF (Java)                |
-| Burak Atalay                | CGF (Java)                |
-| Talha Ege Çakmak            | NF (Notification Func.) (Java) 
+| Ahmet Sefa Çetin            | ABMF/SF                   |
+| Kaan Yavuz                  | AOM/MW                    |
+| Hamza Elzarw                | TGF                       |
+| Burak Atalay                | CGF                       |
+| Talha Ege Çakmak            | NF                        | 
