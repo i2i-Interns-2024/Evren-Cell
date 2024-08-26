@@ -13,8 +13,8 @@ LinkedIn post can be reached from the link here ---------> [LinkedIn Post](https
 | Begüm Uğurlu                | Project Manager           |
 | Ömer Faruk Şafakoğlu        | Analyst                   |
 | Bilal Arslan                | Oracle DB                 |
-| Enes Tahtacı                | Oracle DB                 |
-| Emirhan Kaplan              | VoltDB                    |
+| Enes Tahtacı                | VoltDB                 |
+| Emirhan Kaplan              | Hazelcast                    |
 | Mustafa Yasin Emir          | Kafka                     |
 | Tuna Başar                  | Web App                   |
 | Ömer Faruk Şafakoğlu        | iOS App                   |
