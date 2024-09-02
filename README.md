@@ -6,6 +6,8 @@ LinkedIn post can be reached from the link here ---------> [LinkedIn Post](https
 
 ![Project_Logo](https://github.com/i2i-Interns-2024/Evren-Cell/blob/main/DesktopApp%2Fsrc%2Fmain%2Fresources%2Flogo.jpg)
 
+![System_Design](https://github.com/i2i-Interns-2024/Evren-Cell/blob/main/system_design.png)
+
 ## Project Team
 
 | Name                        | Role                      |
